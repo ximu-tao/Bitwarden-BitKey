@@ -113,6 +113,7 @@ fun VaultItemLoginContent(
                     onShowPasswordClick = vaultLoginItemTypeHandlers.onShowPasswordClick,
                     onCheckForBreachClick = vaultLoginItemTypeHandlers.onCheckForBreachClick,
                     onCopyPasswordClick = vaultLoginItemTypeHandlers.onCopyPasswordClick,
+                    onSendToBitKeyClick = vaultLoginItemTypeHandlers.onSendToBitKeyClick,
                     cardStyle = loginItemState
                         .username
                         ?.let { CardStyle.Bottom }
@@ -237,6 +238,7 @@ private fun PasswordField(
     onShowPasswordClick: (Boolean) -> Unit,
     onCheckForBreachClick: () -> Unit,
     onCopyPasswordClick: () -> Unit,
+    onSendToBitKeyClick: () -> Unit,
     cardStyle: CardStyle,
     modifier: Modifier = Modifier,
 ) {
@@ -250,6 +252,12 @@ private fun PasswordField(
             readOnly = true,
             singleLine = false,
             actions = {
+                BitwardenStandardIconButton(
+                    vectorIconRes = BitwardenDrawable.ic_send,
+                    contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                    onClick = onSendToBitKeyClick,
+                    modifier = Modifier.testTag(tag = "LoginSendToBitKeyButton"),
+                )
                 BitwardenStandardIconButton(
                     vectorIconRes = BitwardenDrawable.ic_copy,
                     contentDescription = stringResource(id = BitwardenString.copy_password),

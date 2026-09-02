@@ -3,6 +3,9 @@ package com.x8bit.bitwarden.ui.vault.feature.item
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.bitwarden.bitkey.protocol.BitKeyError
+import com.bitwarden.bitkey.send.BitKeySendResult
+import com.bitwarden.bitkey.send.BitKeySendService
 import com.bitwarden.collections.CollectionView
 import com.bitwarden.core.data.manager.model.FlagKey
 import com.bitwarden.core.data.repository.model.DataState
@@ -141,6 +144,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
     private val featureFlagManager: FeatureFlagManager = mockk {
         every { getFeatureFlagFlow(FlagKey.Vfo1Foundation) } returns mutableVfo1FoundationFlagFlow
     }
+    private val mockBitKeySendService: BitKeySendService = mockk(relaxed = true)
 
     @BeforeEach
     fun setup() {
@@ -1883,6 +1887,194 @@ class VaultItemViewModelTest : BaseViewModelTest() {
                     relatedLocations = persistentListOf(),
                     hasOrganizations = true,
                 )
+            }
+        }
+
+        @Test
+        fun `on SendToBitKeyClick with blank address opens the device picker when a password exists`() =
+            runTest {
+                every {
+                    mockCipherView.toViewState(
+                        previousState = null,
+                        isPremiumUser = true,
+                        canDelete = true,
+                        canRestore = false,
+                        canAssignToCollections = true,
+                        canEdit = true,
+                        totpCodeItemData = createTotpCodeData(),
+                        baseIconUrl = Environment.Prod.Us.baseIconUrl,
+                        isIconLoadingDisabled = false,
+                        relatedLocations = persistentListOf(),
+                        hasOrganizations = true,
+                    )
+                } returns createViewState()
+                mutableVaultItemFlow.value = DataState.Loaded(data = mockCipherView)
+                mutableAuthCodeItemFlow.value = DataState.Loaded(
+                    data = createVerificationCodeItem(),
+                )
+                mutableCollectionsStateFlow.value = DataState.Loaded(emptyList())
+                mutableFoldersStateFlow.value = DataState.Loaded(emptyList())
+
+                viewModel.stateFlow.test {
+                    assertEquals(
+                        DEFAULT_STATE.copy(viewState = DEFAULT_VIEW_STATE),
+                        awaitItem(),
+                    )
+                    viewModel.trySendAction(
+                        VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                            deviceAddress = "",
+                        ),
+                    )
+                    assertEquals(
+                        DEFAULT_STATE.copy(
+                            viewState = DEFAULT_VIEW_STATE,
+                            dialog = VaultItemState.DialogState.BitKeyDevicePicker,
+                        ),
+                        awaitItem(),
+                    )
+                }
+
+                coVerify(exactly = 0) {
+                    mockBitKeySendService.sendPassword(any(), any())
+                }
+            }
+
+        @Test
+        fun `on SendToBitKeyClick with blank address emits no-password snackbar when missing`() =
+            runTest {
+                val loginWithoutPassword = DEFAULT_LOGIN_TYPE.copy(
+                    passwordData = VaultItemState.ViewState.Content.ItemType.Login.PasswordData(
+                        password = "",
+                        isVisible = false,
+                        canViewPassword = true,
+                    ),
+                )
+                val viewStateWithoutPassword = VaultItemState.ViewState.Content(
+                    common = DEFAULT_COMMON,
+                    type = loginWithoutPassword,
+                )
+                viewModel = createViewModel(
+                    state = DEFAULT_STATE.copy(viewState = viewStateWithoutPassword),
+                )
+
+                viewModel.eventFlow.test {
+                    viewModel.trySendAction(
+                        VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                            deviceAddress = "",
+                        ),
+                    )
+                    assertEquals(
+                        VaultItemEvent.ShowSnackbar(
+                            message = BitwardenString.bitkey_send_no_password.asText(),
+                        ),
+                        awaitItem(),
+                    )
+                }
+
+                coVerify(exactly = 0) {
+                    mockBitKeySendService.sendPassword(any(), any())
+                }
+            }
+
+        @Test
+        fun `on SendToBitKeyClick with valid address triggers send and emits success`() = runTest {
+            val address = "AA:BB:CC:DD:EE:FF"
+            coEvery {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
+            } returns BitKeySendResult.Success
+
+            viewModel.eventFlow.test {
+                viewModel.trySendAction(
+                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                        deviceAddress = address,
+                    ),
+                )
+                assertEquals(
+                    VaultItemEvent.ShowSnackbar(
+                        message = BitwardenString.bitkey_send_success.asText(),
+                    ),
+                    awaitItem(),
+                )
+            }
+
+            coVerify(exactly = 1) {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
+            }
+        }
+
+        @Test
+        fun `on SendToBitKeyClick maps a DeviceError to the failure snackbar`() = runTest {
+            val address = "AA:BB:CC:DD:EE:FF"
+            coEvery {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
+            } returns BitKeySendResult.DeviceError(BitKeyError.BufferFull)
+
+            viewModel.eventFlow.test {
+                viewModel.trySendAction(
+                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                        deviceAddress = address,
+                    ),
+                )
+                assertEquals(
+                    VaultItemEvent.ShowSnackbar(
+                        message = BitwardenString.bitkey_send_failure.asText(),
+                    ),
+                    awaitItem(),
+                )
+            }
+        }
+
+        @Test
+        fun `on SendToBitKeyClick maps a TimedOut result to the timed-out snackbar`() = runTest {
+            val address = "AA:BB:CC:DD:EE:FF"
+            coEvery {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
+            } returns BitKeySendResult.TimedOut
+
+            viewModel.eventFlow.test {
+                viewModel.trySendAction(
+                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                        deviceAddress = address,
+                    ),
+                )
+                assertEquals(
+                    VaultItemEvent.ShowSnackbar(
+                        message = BitwardenString.bitkey_send_timed_out.asText(),
+                    ),
+                    awaitItem(),
+                )
+            }
+        }
+
+        @Test
+        fun `on BitKeyDeviceSelected closes the picker and triggers the send`() = runTest {
+            val address = "AA:BB:CC:DD:EE:FF"
+            coEvery {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
+            } returns BitKeySendResult.Success
+
+            val initialState = DEFAULT_STATE.copy(
+                viewState = DEFAULT_VIEW_STATE,
+                dialog = VaultItemState.DialogState.BitKeyDevicePicker,
+            )
+            viewModel = createViewModel(state = initialState)
+
+            viewModel.eventFlow.test {
+                viewModel.trySendAction(
+                    VaultItemAction.ItemType.Login.BitKeyDeviceSelected(
+                        deviceAddress = address,
+                    ),
+                )
+                assertEquals(
+                    VaultItemEvent.ShowSnackbar(
+                        message = BitwardenString.bitkey_send_success.asText(),
+                    ),
+                    awaitItem(),
+                )
+            }
+
+            coVerify(exactly = 1) {
+                mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
             }
         }
 
@@ -3902,6 +4094,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
         tempAttachmentFile: File? = null,
         environmentRepository: EnvironmentRepository = mockEnvironmentRepository,
         settingsRepository: SettingsRepository = mockSettingsRepository,
+        bitKeySendService: BitKeySendService = mockBitKeySendService,
     ): VaultItemViewModel = VaultItemViewModel(
         savedStateHandle = SavedStateHandle().apply {
             set("state", state)
@@ -3920,6 +4113,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
         snackbarRelayManager = snackbarRelayManager,
         premiumStateManager = premiumStateManager,
         featureFlagManager = featureFlagManager,
+        bitKeySendService = bitKeySendService,
     )
 
     private fun createViewState(

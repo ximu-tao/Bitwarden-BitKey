@@ -239,6 +239,7 @@ dependencies {
     implementation(project(":authenticatorbridge"))
 
     implementation(project(":annotation"))
+    implementation(project(":bitkey"))
     implementation(project(":core"))
     implementation(project(":cxf"))
     implementation(project(":data"))

@@ -45,6 +45,7 @@ include(
     ":app",
     ":authenticator",
     ":authenticatorbridge",
+    ":bitkey",
     ":core",
     ":cxf",
     ":data",

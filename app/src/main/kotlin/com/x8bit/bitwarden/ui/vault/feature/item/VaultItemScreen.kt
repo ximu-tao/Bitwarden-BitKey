@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bitwarden.bitkey.connection.BitKeyConnectionManager
 import com.bitwarden.core.util.persistentListOfNotNull
 import com.bitwarden.ui.platform.base.util.EventsEffect
 import com.bitwarden.ui.platform.components.appbar.BitwardenTopAppBar
@@ -44,6 +45,8 @@ import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.ui.platform.composition.util.vfo1Foundation
 import com.x8bit.bitwarden.ui.vault.feature.addedit.VaultAddEditArgs
 import com.x8bit.bitwarden.ui.vault.feature.attachments.preview.PreviewAttachmentRoute
+import com.x8bit.bitwarden.ui.vault.feature.item.dialog.BitKeyConnectionDialog
+import com.x8bit.bitwarden.ui.vault.feature.item.dialog.BitKeyConnectionManagerEntryPoint
 import com.x8bit.bitwarden.ui.vault.feature.item.handlers.VaultBankAccountItemTypeHandlers
 import com.x8bit.bitwarden.ui.vault.feature.item.handlers.VaultCardItemTypeHandlers
 import com.x8bit.bitwarden.ui.vault.feature.item.handlers.VaultCommonItemTypeHandlers
@@ -156,6 +159,11 @@ fun VaultItemScreen(
         },
         onUpgradeToPremiumClick = {
             viewModel.trySendAction(VaultItemAction.Common.UpgradeToPremiumClick)
+        },
+        onBitKeyDeviceSelected = { address ->
+            viewModel.trySendAction(
+                VaultItemAction.ItemType.Login.BitKeyDeviceSelected(address),
+            )
         },
     )
 
@@ -320,6 +328,7 @@ private fun VaultItemDialogs(
     onConfirmCloneWithoutFido2Credential: () -> Unit,
     onConfirmRestoreAction: () -> Unit,
     onUpgradeToPremiumClick: () -> Unit,
+    onBitKeyDeviceSelected: (String) -> Unit,
 ) {
     when (dialog) {
         is VaultItemState.DialogState.RequiresPremium -> {
@@ -378,6 +387,22 @@ private fun VaultItemDialogs(
             onDismissClick = onDismissRequest,
             onDismissRequest = onDismissRequest,
         )
+
+        VaultItemState.DialogState.BitKeyDevicePicker -> {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val manager = remember(context) {
+                val entryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
+                    context.applicationContext,
+                    BitKeyConnectionManagerEntryPoint::class.java,
+                )
+                entryPoint.bitKeyConnectionManager()
+            }
+            BitKeyConnectionDialog(
+                connectionManager = manager,
+                onDeviceSelected = onBitKeyDeviceSelected,
+                onDismissRequest = onDismissRequest,
+            )
+        }
 
         null -> Unit
     }

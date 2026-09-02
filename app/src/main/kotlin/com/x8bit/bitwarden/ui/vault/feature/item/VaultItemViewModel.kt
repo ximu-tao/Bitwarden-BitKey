@@ -4,6 +4,9 @@ import android.net.Uri
 import android.os.Parcelable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.bitwarden.bitkey.protocol.BitKeyError
+import com.bitwarden.bitkey.send.BitKeySendResult
+import com.bitwarden.bitkey.send.BitKeySendService
 import com.bitwarden.collections.CollectionView
 import com.bitwarden.core.data.manager.model.FlagKey
 import com.bitwarden.core.data.repository.model.DataState
@@ -102,6 +105,7 @@ class VaultItemViewModel @Inject constructor(
     private val snackbarRelayManager: SnackbarRelayManager<SnackbarRelay>,
     private val premiumStateManager: PremiumStateManager,
     private val featureFlagManager: FeatureFlagManager,
+    private val bitKeySendService: BitKeySendService,
 ) : BaseViewModel<VaultItemState, VaultItemEvent, VaultItemAction>(
     // We load the state from the savedStateHandle for testing purposes.
     initialState = savedStateHandle[KEY_STATE] ?: run {
@@ -666,6 +670,14 @@ class VaultItemViewModel @Inject constructor(
             is VaultItemAction.ItemType.Login.PasswordVisibilityClicked -> {
                 handlePasswordVisibilityClicked(action)
             }
+
+            is VaultItemAction.ItemType.Login.SendToBitKeyClick -> {
+                handleSendToBitKeyClick(action)
+            }
+
+            is VaultItemAction.ItemType.Login.BitKeyDeviceSelected -> {
+                handleBitKeyDeviceSelected(action)
+            }
         }
     }
 
@@ -699,6 +711,103 @@ class VaultItemViewModel @Inject constructor(
             )
         }
     }
+
+    /**
+     * Handles the Send-to-BitKey action by launching the [BitKeySendService].
+     *
+     * When [VaultItemAction.ItemType.Login.SendToBitKeyClick.deviceAddress] is empty the
+     * handler opens the device picker dialog; the actual send is only triggered once a
+     * concrete device address has been chosen. The handler refuses to run when the
+     * password is missing. UI-level feedback flows through [VaultItemEvent.ShowSnackbar]
+     * events so the screen never has to expose the raw password or any error details in
+     * the ViewModel state.
+     */
+    private fun handleSendToBitKeyClick(action: VaultItemAction.ItemType.Login.SendToBitKeyClick) {
+        if (action.deviceAddress.isBlank()) {
+            var password: String? = null
+            onLoginContent { _, login -> password = login.passwordData?.password }
+            if (password.isNullOrEmpty()) {
+                sendEvent(
+                    VaultItemEvent.ShowSnackbar(
+                        message = BitwardenString.bitkey_send_no_password.asText(),
+                    ),
+                )
+                return
+            }
+            updateDialogState(VaultItemState.DialogState.BitKeyDevicePicker)
+            return
+        }
+        sendPasswordToDevice(action.deviceAddress)
+    }
+
+    private fun handleBitKeyDeviceSelected(
+        action: VaultItemAction.ItemType.Login.BitKeyDeviceSelected,
+    ) {
+        updateDialogState(null)
+        sendPasswordToDevice(action.deviceAddress)
+    }
+
+    private fun sendPasswordToDevice(deviceAddress: String) {
+        if (deviceAddress.isBlank()) {
+            sendEvent(
+                VaultItemEvent.ShowSnackbar(
+                    message = BitwardenString.bitkey_send_preparation_failed.asText(),
+                ),
+            )
+            return
+        }
+        var password: String? = null
+        onLoginContent { _, login -> password = login.passwordData?.password }
+        val resolved = password
+        if (resolved.isNullOrEmpty()) {
+            sendEvent(
+                VaultItemEvent.ShowSnackbar(
+                    message = BitwardenString.bitkey_send_no_password.asText(),
+                ),
+            )
+            return
+        }
+        viewModelScope.launch {
+            updateDialogState(VaultItemStateDialogStateLoading(BitwardenString.bitkey_send_sending))
+            val result = bitKeySendService.sendPassword(deviceAddress, resolved)
+            updateDialogState(null)
+            handleBitKeySendResult(result)
+        }
+    }
+
+    private fun handleBitKeySendResult(result: BitKeySendResult) {
+        val message = when (result) {
+            BitKeySendResult.Success -> BitwardenString.bitkey_send_success.asText()
+            BitKeySendResult.EmptyText -> BitwardenString.bitkey_send_no_password.asText()
+            BitKeySendResult.UnsupportedCharacters ->
+                BitwardenString.bitkey_send_unsupported_character.asText()
+            BitKeySendResult.TimedOut -> BitwardenString.bitkey_send_timed_out.asText()
+            is BitKeySendResult.ConnectionFailed -> bitkeyFailureMessage(result)
+            is BitKeySendResult.DeviceError -> bitkeyDeviceErrorMessage(result.error)
+        }
+        sendEvent(VaultItemEvent.ShowSnackbar(message = message))
+    }
+
+    private fun bitkeyFailureMessage(failure: BitKeySendResult.ConnectionFailed): Text {
+        val msg = failure.cause.message.orEmpty().lowercase()
+        return when {
+            "bluetooth" in msg && ("disabled" in msg || "off" in msg) ->
+                BitwardenString.bitkey_send_bluetooth_off.asText()
+            "permission" in msg ->
+                BitwardenString.bitkey_send_permission_missing.asText()
+            "disconnect" in msg ->
+                BitwardenString.bitkey_send_disconnected.asText()
+            else -> BitwardenString.bitkey_send_failure.asText()
+        }
+    }
+
+    private fun bitkeyDeviceErrorMessage(error: BitKeyError): Text = when (error) {
+        BitKeyError.None -> BitwardenString.bitkey_send_success.asText()
+        else -> BitwardenString.bitkey_send_failure.asText()
+    }
+
+    private fun VaultItemStateDialogStateLoading(message: Text):
+        VaultItemState.DialogState.Loading = VaultItemState.DialogState.Loading(message)
 
     private fun handleCopyTotpClick() {
         onLoginContent { _, login ->
@@ -2442,6 +2551,13 @@ data class VaultItemState(
          */
         @Parcelize
         data object RestoreItemDialog : DialogState()
+
+        /**
+         * Displays the BitKey device picker dialog so the user can choose which BitKey
+         * peripheral to send the current password to.
+         */
+        @Parcelize
+        data object BitKeyDevicePicker : DialogState()
     }
 }
 
@@ -2752,6 +2868,25 @@ sealed class VaultItemAction {
              */
             data class PasswordVisibilityClicked(
                 val isVisible: Boolean,
+            ) : Login()
+
+            /**
+             * The user has clicked the Send-to-BitKey button for the password.
+             *
+             * This action is only meaningful for login items that have a non-empty password.
+             * The ViewModel resolves the currently selected BitKey device address (kept in
+             * dialog state) before invoking the [BitKeySendService].
+             */
+            data class SendToBitKeyClick(
+                val deviceAddress: String,
+            ) : Login()
+
+            /**
+             * The user picked a BitKey device from the connection dialog. Triggers a
+             * send-to-BitKey attempt that uses the supplied MAC address.
+             */
+            data class BitKeyDeviceSelected(
+                val deviceAddress: String,
             ) : Login()
         }
 

@@ -14,6 +14,19 @@
     <string name="preview">Preview</string>
     <string name="deleting">Deleting…</string>
     <string name="do_you_really_want_to_delete">Do you really want to delete? This cannot be undone.</string>
+    <!-- BitKey BLE bridge UI strings. -->
+    <string name="bitkey_send">Send to BitKey</string>
+    <string name="bitkey_send_no_password">This item has no password to send.</string>
+    <string name="bitkey_send_connecting">Connecting to BitKey…</string>
+    <string name="bitkey_send_sending">Sending password to BitKey…</string>
+    <string name="bitkey_send_success">Password sent to BitKey</string>
+    <string name="bitkey_send_failure">Failed to send to BitKey</string>
+    <string name="bitkey_send_unsupported_character">BitKey can\'t send one or more characters in this password.</string>
+    <string name="bitkey_send_disconnected">BitKey disconnected before completion</string>
+    <string name="bitkey_send_timed_out">BitKey did not acknowledge in time</string>
+    <string name="bitkey_send_bluetooth_off">Bluetooth is off. Turn it on to use BitKey.</string>
+    <string name="bitkey_send_permission_missing">BitKey needs Bluetooth permission to send.</string>
+    <string name="bitkey_send_preparation_failed">Could not prepare the password for BitKey.</string>
     <string name="edit">Edit</string>
     <string name="edit_folder">Edit folder</string>
     <string name="email">Email</string>
