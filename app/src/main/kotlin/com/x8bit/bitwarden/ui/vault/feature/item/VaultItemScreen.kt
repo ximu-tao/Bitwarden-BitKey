@@ -42,7 +42,10 @@ import com.bitwarden.ui.platform.manager.IntentManager
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
+import com.x8bit.bitwarden.ui.platform.composition.LocalPermissionsManager
 import com.x8bit.bitwarden.ui.platform.composition.util.vfo1Foundation
+import com.x8bit.bitwarden.ui.platform.manager.permissions.PermissionsManager
+import com.x8bit.bitwarden.ui.platform.manager.utils.startApplicationDetailsSettingsActivity
 import com.x8bit.bitwarden.ui.vault.feature.addedit.VaultAddEditArgs
 import com.x8bit.bitwarden.ui.vault.feature.attachments.preview.PreviewAttachmentRoute
 import com.x8bit.bitwarden.ui.vault.feature.item.dialog.BitKeyConnectionDialog
@@ -67,6 +70,7 @@ import com.x8bit.bitwarden.ui.vault.model.VaultAddEditType
 fun VaultItemScreen(
     viewModel: VaultItemViewModel = hiltViewModel(),
     intentManager: IntentManager = LocalIntentManager.current,
+    permissionsManager: PermissionsManager = LocalPermissionsManager.current,
     onNavigateBack: () -> Unit,
     onNavigateToVaultAddEditItem: (args: VaultAddEditArgs) -> Unit,
     onNavigateToMoveToOrganization: (vaultItemId: String, showOnlyCollections: Boolean) -> Unit,
@@ -145,6 +149,8 @@ fun VaultItemScreen(
 
     VaultItemDialogs(
         dialog = state.dialog,
+        permissionsManager = permissionsManager,
+        onOpenAppSettings = { intentManager.startApplicationDetailsSettingsActivity() },
         onDismissRequest = { viewModel.trySendAction(VaultItemAction.Common.DismissDialogClick) },
         onConfirmDeleteClick = {
             viewModel.trySendAction(VaultItemAction.Common.ConfirmDeleteClick)
@@ -323,6 +329,8 @@ fun VaultItemScreen(
 @Composable
 private fun VaultItemDialogs(
     dialog: VaultItemState.DialogState?,
+    permissionsManager: PermissionsManager,
+    onOpenAppSettings: () -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmDeleteClick: () -> Unit,
     onConfirmCloneWithoutFido2Credential: () -> Unit,
@@ -399,7 +407,9 @@ private fun VaultItemDialogs(
             }
             BitKeyConnectionDialog(
                 connectionManager = manager,
+                permissionsManager = permissionsManager,
                 onDeviceSelected = onBitKeyDeviceSelected,
+                onOpenAppSettings = onOpenAppSettings,
                 onDismissRequest = onDismissRequest,
             )
         }

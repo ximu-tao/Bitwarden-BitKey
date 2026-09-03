@@ -768,7 +768,7 @@ class VaultItemViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            updateDialogState(VaultItemStateDialogStateLoading(BitwardenString.bitkey_send_sending))
+            updateDialogState(VaultItemStateDialogStateLoading(BitwardenString.bitkey_send_sending.asText()))
             val result = bitKeySendService.sendPassword(deviceAddress, resolved)
             updateDialogState(null)
             handleBitKeySendResult(result)

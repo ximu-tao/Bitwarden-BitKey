@@ -1,5 +1,7 @@
 package com.x8bit.bitwarden.ui.vault.feature.item.dialog
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -14,16 +16,18 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ripple.ripple
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,12 +41,13 @@ import com.bitwarden.bitkey.model.BitKeyDiscoveredDevice
 import com.bitwarden.ui.platform.components.dialog.util.maxDialogHeight
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.platform.theme.BitwardenTheme
+import com.x8bit.bitwarden.ui.platform.manager.permissions.PermissionsManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 /**
  * Hilt [EntryPoint] used to retrieve the singleton [BitKeyConnectionManager] from outside a
@@ -69,6 +74,37 @@ data class BitKeyDialogState(
 )
 
 /**
+ * Runtime permissions required to discover BitKey BLE peripherals.
+ *
+ * - API 31+ (Android 12+): `BLUETOOTH_SCAN` + `BLUETOOTH_CONNECT`.
+ * - API ≤30: legacy `ACCESS_FINE_LOCATION` (required for raw BLE scans).
+ */
+private val bitkeyRequiredPermissions: Array<String> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        arrayOf(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT,
+        )
+    } else {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+/**
+ * Visible states of the runtime permission flow rendered inside the dialog.
+ *
+ * - [Granted]: all required permissions are currently granted, scanning proceeds.
+ * - [NeedsPrompt]: permission missing but the user has not yet hard-denied; show a rationale
+ *   and offer to launch the system permission prompt.
+ * - [PermanentlyDenied]: the user has denied with "don't ask again"; show a "Open settings"
+ *   affordance instead of re-launching the prompt.
+ */
+private sealed class BitKeyPermissionUiState {
+    data object Granted : BitKeyPermissionUiState()
+    data object NeedsPrompt : BitKeyPermissionUiState()
+    data object PermanentlyDenied : BitKeyPermissionUiState()
+}
+
+/**
  * A self-contained dialog that lets the user pick a nearby BitKey peripheral and start a
  * send.
  *
@@ -76,39 +112,58 @@ data class BitKeyDialogState(
  * `scan()` and stops the scan on dismissal. Selecting a device invokes [onDeviceSelected]
  * with the device's MAC address — that callback is the integration point with
  * [com.x8bit.bitwarden.ui.vault.feature.item.VaultItemViewModel].
+ *
+ * Before scanning, the dialog drives a runtime permission state machine via
+ * [permissionsManager]: if the required BLE permissions are missing it shows an in-dialog
+ * rationale + grant button. If the user previously selected "don't ask again" the dialog
+ * surfaces [onOpenAppSettings] instead so they can grant access from system settings.
  */
 @Suppress("LongMethod")
 @Composable
 fun BitKeyConnectionDialog(
     connectionManager: BitKeyConnectionManager,
+    permissionsManager: PermissionsManager,
     onDeviceSelected: (deviceAddress: String) -> Unit,
+    onOpenAppSettings: () -> Unit,
     onDismissRequest: () -> Unit,
     initialState: BitKeyDialogState = BitKeyDialogState(),
 ) {
     var state by remember { mutableStateOf(initialState) }
+    var hasRequested by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    DisposableEffect(connectionManager) {
-        val job = scope.launch {
-            connectionManager
-                .scan()
-                .catch { throwable ->
-                    state = state.copy(
-                        isScanning = false,
-                        errorMessage = throwable.message,
-                    )
-                }
-                .onEach { device ->
-                    val existing = state.devices
-                    val merged = if (existing.any { it.address == device.address }) {
-                        existing.map { if (it.address == device.address) device else it }
-                    } else {
-                        existing + device
-                    }
-                    state = state.copy(devices = merged)
-                }
-                .collect()
+    val permissionUiState = remember(permissionsManager, hasRequested) {
+        computePermissionUiState(permissionsManager, hasRequested)
+    }
+
+    val permissionLauncher = permissionsManager.getPermissionsLauncher { _ ->
+        // Trigger recomputation so a successful grant moves us back to the scan view.
+        hasRequested = true
+    }
+
+    DisposableEffect(connectionManager, permissionUiState) {
+        if (permissionUiState != BitKeyPermissionUiState.Granted) {
+            connectionManager.stopScan()
+            return@DisposableEffect onDispose { connectionManager.stopScan() }
         }
+        val job = connectionManager
+            .scan()
+            .catch { throwable ->
+                state = state.copy(
+                    isScanning = false,
+                    errorMessage = throwable.message,
+                )
+            }
+            .onEach { device ->
+                val existing = state.devices
+                val merged = if (existing.any { it.address == device.address }) {
+                    existing.map { if (it.address == device.address) device else it }
+                } else {
+                    existing + device
+                }
+                state = state.copy(devices = merged)
+            }
+            .launchIn(scope)
         onDispose {
             job.cancel()
             connectionManager.stopScan()
@@ -133,21 +188,49 @@ fun BitKeyConnectionDialog(
                 color = BitwardenTheme.colorScheme.text.primary,
                 style = BitwardenTheme.typography.headlineSmall,
             )
-            state.errorMessage?.let { error ->
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .fillMaxWidth(),
-                    text = error,
-                    color = BitwardenTheme.colorScheme.status.error,
-                    style = BitwardenTheme.typography.bodyMedium,
+
+            when (permissionUiState) {
+                BitKeyPermissionUiState.Granted -> {
+                    state.errorMessage?.let { error ->
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .fillMaxWidth(),
+                            text = error,
+                            color = BitwardenTheme.colorScheme.status.error,
+                            style = BitwardenTheme.typography.bodyMedium,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    DeviceList(
+                        state = state,
+                        onDeviceClick = { onDeviceSelected(it) },
+                    )
+                }
+
+                BitKeyPermissionUiState.NeedsPrompt -> PermissionRationale(
+                    message = stringResource(
+                        id = BitwardenString.bitkey_send_permission_rationale,
+                    ),
+                    actionLabel = stringResource(
+                        id = BitwardenString.bitkey_send_permission_grant,
+                    ),
+                    onAction = {
+                        permissionLauncher.launch(bitkeyRequiredPermissions)
+                    },
                 )
-                Spacer(Modifier.height(8.dp))
+
+                BitKeyPermissionUiState.PermanentlyDenied -> PermissionRationale(
+                    message = stringResource(
+                        id = BitwardenString.bitkey_send_permission_denied_explanation,
+                    ),
+                    actionLabel = stringResource(
+                        id = BitwardenString.bitkey_send_permission_open_settings,
+                    ),
+                    onAction = onOpenAppSettings,
+                )
             }
-            DeviceList(
-                state = state,
-                onDeviceClick = { onDeviceSelected(it) },
-            )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,7 +238,9 @@ fun BitKeyConnectionDialog(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (state.isScanning) {
+                if (state.isScanning &&
+                    permissionUiState == BitKeyPermissionUiState.Granted
+                ) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .testTag("BitKeyDialogScanIndicator")
@@ -171,6 +256,58 @@ fun BitKeyConnectionDialog(
                     Text(text = stringResource(id = BitwardenString.cancel))
                 }
             }
+        }
+    }
+}
+
+/**
+ * Reduces the current runtime permission status into a UI state.
+ *
+ * @return one of [BitKeyPermissionUiState.Granted], [BitKeyPermissionUiState.NeedsPrompt]
+ * or [BitKeyPermissionUiState.PermanentlyDenied], in priority order.
+ */
+private fun computePermissionUiState(
+    permissionsManager: PermissionsManager,
+    hasRequested: Boolean,
+): BitKeyPermissionUiState {
+    if (permissionsManager.checkPermissions(bitkeyRequiredPermissions)) {
+        return BitKeyPermissionUiState.Granted
+    }
+    val anyShouldShowRationale = bitkeyRequiredPermissions.any {
+        permissionsManager.shouldShowRequestPermissionRationale(it)
+    }
+    return when {
+        anyShouldShowRationale -> BitKeyPermissionUiState.NeedsPrompt
+        hasRequested -> BitKeyPermissionUiState.PermanentlyDenied
+        else -> BitKeyPermissionUiState.NeedsPrompt
+    }
+}
+
+@Composable
+private fun ColumnScope.PermissionRationale(
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxWidth()
+            .weight(1f, fill = false),
+    ) {
+        Text(
+            text = message,
+            color = BitwardenTheme.colorScheme.text.secondary,
+            style = BitwardenTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.height(12.dp))
+        Button(
+            onClick = onAction,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("BitKeyDialogPermissionAction"),
+        ) {
+            Text(text = actionLabel)
         }
     }
 }

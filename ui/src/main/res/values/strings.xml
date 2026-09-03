@@ -26,6 +26,10 @@
     <string name="bitkey_send_timed_out">BitKey did not acknowledge in time</string>
     <string name="bitkey_send_bluetooth_off">Bluetooth is off. Turn it on to use BitKey.</string>
     <string name="bitkey_send_permission_missing">BitKey needs Bluetooth permission to send.</string>
+    <string name="bitkey_send_permission_rationale">BitKey needs Bluetooth and location access to discover nearby devices. Grant the permission to continue.</string>
+    <string name="bitkey_send_permission_grant">Grant Bluetooth access</string>
+    <string name="bitkey_send_permission_denied_explanation">BitKey needs Bluetooth access to find your device. The permission was denied; open Settings → Apps → Bitwarden → Permissions to grant it.</string>
+    <string name="bitkey_send_permission_open_settings">Open settings</string>
     <string name="bitkey_send_preparation_failed">Could not prepare the password for BitKey.</string>
     <string name="edit">Edit</string>
     <string name="edit_folder">Edit folder</string>
