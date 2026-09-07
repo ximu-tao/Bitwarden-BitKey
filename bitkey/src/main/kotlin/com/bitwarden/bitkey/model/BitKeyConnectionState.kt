@@ -51,6 +51,13 @@ sealed class BitKeyConnectionState {
             /** Service discovery did not find the BitKey service or characteristics. */
             ServiceDiscoveryFailed,
 
+            /**
+             * GATT writeDescriptor/setCharacteristicNotification failed or another
+             * internal check surfaced an unrecoverable error during the handshake.
+             * Surfaced instead of crashing the host process.
+             */
+            HandshakeFailed,
+
             /** Generic catch-all for platform errors surfaced through [android.bluetooth]. */
             AdapterError,
         }

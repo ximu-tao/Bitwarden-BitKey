@@ -85,6 +85,7 @@ fun VaultItemDriversLicenseContent(
                     textFieldTestTag = "DriversLicenseItemFirstNameEntry",
                     copyActionTestTag = "DriversLicenseCopyFirstNameButton",
                     onCopyClick = vaultDriversLicenseItemTypeHandlers.onCopyFirstNameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = driversLicenseState
                         .propertyList
                         .toListItemCardStyle(
@@ -108,6 +109,7 @@ fun VaultItemDriversLicenseContent(
                     textFieldTestTag = "DriversLicenseItemMiddleNameEntry",
                     copyActionTestTag = "DriversLicenseCopyMiddleNameButton",
                     onCopyClick = vaultDriversLicenseItemTypeHandlers.onCopyMiddleNameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = driversLicenseState
                         .propertyList
                         .toListItemCardStyle(
@@ -131,6 +133,7 @@ fun VaultItemDriversLicenseContent(
                     textFieldTestTag = "DriversLicenseItemLastNameEntry",
                     copyActionTestTag = "DriversLicenseCopyLastNameButton",
                     onCopyClick = vaultDriversLicenseItemTypeHandlers.onCopyLastNameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = driversLicenseState
                         .propertyList
                         .toListItemCardStyle(
@@ -153,6 +156,19 @@ fun VaultItemDriversLicenseContent(
                     onValueChange = {},
                     readOnly = true,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(licenseNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "DriversLicenseSendLicenseNumberToBitKeyButton",
+                            ),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
@@ -395,6 +411,7 @@ private fun DriversLicenseCopyField(
     copyActionTestTag: String,
     onCopyClick: () -> Unit,
     cardStyle: CardStyle,
+    onSendFieldToBitKeyClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BitwardenTextField(
@@ -404,6 +421,12 @@ private fun DriversLicenseCopyField(
         readOnly = true,
         singleLine = false,
         actions = {
+            BitwardenStandardIconButton(
+                vectorIconRes = BitwardenDrawable.ic_send,
+                contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                onClick = { onSendFieldToBitKeyClick(value) },
+                modifier = Modifier.testTag(tag = "${copyActionTestTag}SendToBitKey"),
+            )
             BitwardenStandardIconButton(
                 vectorIconRes = BitwardenDrawable.ic_copy,
                 contentDescription = copyContentDescription,

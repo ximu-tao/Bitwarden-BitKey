@@ -74,6 +74,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityNameEntry",
                     copyActionTestTag = "IdentityCopyNameButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyIdentityNameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -96,6 +97,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityUsernameEntry",
                     copyActionTestTag = "IdentityCopyUsernameButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyUsernameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -118,6 +120,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityCompanyEntry",
                     copyActionTestTag = "IdentityCopyCompanyButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyCompanyClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -139,6 +142,18 @@ fun VaultItemIdentityContent(
                     onValueChange = {},
                     readOnly = true,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(ssn)
+                            },
+                            modifier = Modifier
+                                .testTag(tag = "IdentitySendSsnToBitKeyButton"),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(id = BitwardenString.copy_ssn),
@@ -170,6 +185,20 @@ fun VaultItemIdentityContent(
                     readOnly = true,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(passportNumber)
+                            },
+                            modifier = Modifier
+                                .testTag(
+                                    tag = "IdentitySendPassportNumberToBitKeyButton",
+                                ),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(id = BitwardenString.copy_passport_number),
                             onClick = vaultIdentityItemTypeHandlers.onCopyPassportNumberClick,
@@ -200,6 +229,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityLicenseNumberEntry",
                     copyActionTestTag = "IdentityCopyLicenseNumberButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyLicenseNumberClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -222,6 +252,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityEmailEntry",
                     copyActionTestTag = "IdentityCopyEmailButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyEmailClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -244,6 +275,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityPhoneEntry",
                     copyActionTestTag = "IdentityCopyPhoneButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyPhoneClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -266,6 +298,7 @@ fun VaultItemIdentityContent(
                     textFieldTestTag = "IdentityAddressEntry",
                     copyActionTestTag = "IdentityCopyAddressButton",
                     onCopyClick = vaultIdentityItemTypeHandlers.onCopyAddressClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = identityState
                         .propertyList
                         .toListItemCardStyle(
@@ -317,6 +350,7 @@ private fun IdentityCopyField(
     copyActionTestTag: String,
     onCopyClick: () -> Unit,
     cardStyle: CardStyle,
+    onSendFieldToBitKeyClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BitwardenTextField(
@@ -326,6 +360,12 @@ private fun IdentityCopyField(
         readOnly = true,
         singleLine = false,
         actions = {
+            BitwardenStandardIconButton(
+                vectorIconRes = BitwardenDrawable.ic_send,
+                contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                onClick = { onSendFieldToBitKeyClick(value) },
+                modifier = Modifier.testTag(tag = "${copyActionTestTag}SendToBitKey"),
+            )
             BitwardenStandardIconButton(
                 vectorIconRes = BitwardenDrawable.ic_copy,
                 contentDescription = copyContentDescription,

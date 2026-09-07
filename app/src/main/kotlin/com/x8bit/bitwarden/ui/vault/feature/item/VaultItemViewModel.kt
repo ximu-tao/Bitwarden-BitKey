@@ -77,6 +77,14 @@ private const val KEY_STATE = "state"
 private const val KEY_TEMP_ATTACHMENT = "tempAttachmentFile"
 
 /**
+ * Field value that the user wants to send to BitKey. Stored in [SavedStateHandle] so that the
+ * device-picker dialog can hand it off to the `BitKeyDeviceSelected` handler even though the
+ * dialog itself doesn't carry the payload through any state field. Cleared as soon as the
+ * selected-device handler runs (success or failure).
+ */
+private const val KEY_PENDING_BITKEY_FIELD = "pendingBitKeyField"
+
+/**
  * A holder for the raw flow values combined in [VaultItemViewModel]'s `init` block, used to free
  * up a slot for combining in the `vfo1-foundation` feature flag flow.
  */
@@ -128,6 +136,17 @@ class VaultItemViewModel @Inject constructor(
         get() = savedStateHandle[KEY_TEMP_ATTACHMENT]
         set(value) {
             savedStateHandle[KEY_TEMP_ATTACHMENT] = value
+        }
+
+    /**
+     * Field value currently queued for the next BitKey send. Populated by
+     * [handleSendFieldToBitKeyClick] when the user taps a Send-to-BitKey affordance, and
+     * consumed by [handleBitKeyDeviceSelected] once a device is chosen from the picker.
+     */
+    private var pendingBitKeyField: String?
+        get() = savedStateHandle[KEY_PENDING_BITKEY_FIELD]
+        set(value) {
+            savedStateHandle[KEY_PENDING_BITKEY_FIELD] = value
         }
 
     //region Initialization and Overrides
@@ -354,6 +373,8 @@ class VaultItemViewModel @Inject constructor(
             is VaultItemAction.Common.RestoreVaultItemClick -> handleRestoreItemClicked()
             is VaultItemAction.Common.CopyNotesClick -> handleCopyNotesClick()
             is VaultItemAction.Common.PasswordHistoryClick -> handlePasswordHistoryClick()
+            is VaultItemAction.Common.SendFieldToBitKeyClick -> handleSendFieldToBitKeyClick(action)
+            is VaultItemAction.Common.BitKeyDeviceSelected -> handleBitKeyDeviceSelected(action)
             VaultItemAction.Common.ArchiveClick -> handleArchiveClick()
             VaultItemAction.Common.UnarchiveClick -> handleUnarchiveClick()
             VaultItemAction.Common.PremiumRequiredClick -> handlePremiumRequiredClick()
@@ -670,14 +691,6 @@ class VaultItemViewModel @Inject constructor(
             is VaultItemAction.ItemType.Login.PasswordVisibilityClicked -> {
                 handlePasswordVisibilityClicked(action)
             }
-
-            is VaultItemAction.ItemType.Login.SendToBitKeyClick -> {
-                handleSendToBitKeyClick(action)
-            }
-
-            is VaultItemAction.ItemType.Login.BitKeyDeviceSelected -> {
-                handleBitKeyDeviceSelected(action)
-            }
         }
     }
 
@@ -713,53 +726,16 @@ class VaultItemViewModel @Inject constructor(
     }
 
     /**
-     * Handles the Send-to-BitKey action by launching the [BitKeySendService].
-     *
-     * When [VaultItemAction.ItemType.Login.SendToBitKeyClick.deviceAddress] is empty the
-     * handler opens the device picker dialog; the actual send is only triggered once a
-     * concrete device address has been chosen. The handler refuses to run when the
-     * password is missing. UI-level feedback flows through [VaultItemEvent.ShowSnackbar]
-     * events so the screen never has to expose the raw password or any error details in
-     * the ViewModel state.
+     * Handles the Send-to-BitKey action for any printable field across any item type. The
+     * handler stashes [VaultItemAction.Common.SendFieldToBitKeyClick.field] in
+     * [pendingBitKeyField] and opens the device picker dialog; the actual send is only
+     * triggered once a concrete device address has been chosen via
+     * [handleBitKeyDeviceSelected]. The handler refuses to run when the field is empty or
+     * missing. UI-level feedback flows through [VaultItemEvent.ShowSnackbar] events so the
+     * screen never has to expose the raw text or any error details in the ViewModel state.
      */
-    private fun handleSendToBitKeyClick(action: VaultItemAction.ItemType.Login.SendToBitKeyClick) {
-        if (action.deviceAddress.isBlank()) {
-            var password: String? = null
-            onLoginContent { _, login -> password = login.passwordData?.password }
-            if (password.isNullOrEmpty()) {
-                sendEvent(
-                    VaultItemEvent.ShowSnackbar(
-                        message = BitwardenString.bitkey_send_no_password.asText(),
-                    ),
-                )
-                return
-            }
-            updateDialogState(VaultItemState.DialogState.BitKeyDevicePicker)
-            return
-        }
-        sendPasswordToDevice(action.deviceAddress)
-    }
-
-    private fun handleBitKeyDeviceSelected(
-        action: VaultItemAction.ItemType.Login.BitKeyDeviceSelected,
-    ) {
-        updateDialogState(null)
-        sendPasswordToDevice(action.deviceAddress)
-    }
-
-    private fun sendPasswordToDevice(deviceAddress: String) {
-        if (deviceAddress.isBlank()) {
-            sendEvent(
-                VaultItemEvent.ShowSnackbar(
-                    message = BitwardenString.bitkey_send_preparation_failed.asText(),
-                ),
-            )
-            return
-        }
-        var password: String? = null
-        onLoginContent { _, login -> password = login.passwordData?.password }
-        val resolved = password
-        if (resolved.isNullOrEmpty()) {
+    private fun handleSendFieldToBitKeyClick(action: VaultItemAction.Common.SendFieldToBitKeyClick) {
+        if (action.field.isBlank()) {
             sendEvent(
                 VaultItemEvent.ShowSnackbar(
                     message = BitwardenString.bitkey_send_no_password.asText(),
@@ -767,9 +743,39 @@ class VaultItemViewModel @Inject constructor(
             )
             return
         }
+        pendingBitKeyField = action.field
+        updateDialogState(VaultItemState.DialogState.BitKeyDevicePicker)
+    }
+
+    private fun handleBitKeyDeviceSelected(
+        action: VaultItemAction.Common.BitKeyDeviceSelected,
+    ) {
+        updateDialogState(null)
+        val field = pendingBitKeyField
+        pendingBitKeyField = null
+        if (field.isNullOrEmpty()) {
+            sendEvent(
+                VaultItemEvent.ShowSnackbar(
+                    message = BitwardenString.bitkey_send_preparation_failed.asText(),
+                ),
+            )
+            return
+        }
+        sendFieldToDevice(field = field, deviceAddress = action.deviceAddress)
+    }
+
+    private fun sendFieldToDevice(field: String, deviceAddress: String) {
+        if (deviceAddress.isBlank() || field.isBlank()) {
+            sendEvent(
+                VaultItemEvent.ShowSnackbar(
+                    message = BitwardenString.bitkey_send_preparation_failed.asText(),
+                ),
+            )
+            return
+        }
+        updateDialogState(VaultItemStateDialogStateLoading(BitwardenString.bitkey_send_sending.asText()))
         viewModelScope.launch {
-            updateDialogState(VaultItemStateDialogStateLoading(BitwardenString.bitkey_send_sending.asText()))
-            val result = bitKeySendService.sendPassword(deviceAddress, resolved)
+            val result = bitKeySendService.sendPassword(deviceAddress, field)
             updateDialogState(null)
             handleBitKeySendResult(result)
         }
@@ -2691,6 +2697,25 @@ sealed class VaultItemAction {
         data object UpgradeToPremiumClick : Common()
 
         /**
+         * The user requested to send an arbitrary printable field (password, username,
+         * notes, custom-field value, card number, SSH private key, etc.) to a a BitKey
+         * peripheral. The handler opens the device picker dialog; the actual send is
+         * triggered by [BitKeyDeviceSelected].
+         */
+        data class SendFieldToBitKeyClick(
+            val field: String,
+        ) : Common()
+
+        /**
+         * The user picked a BitKey device from the connection dialog. The ViewModel pairs
+         * this with the field value previously stashed by [SendFieldToBitKeyClick] and
+         * runs the send-to-device flow.
+         */
+        data class BitKeyDeviceSelected(
+            val deviceAddress: String,
+        ) : Common()
+
+        /**
          * The user has clicked the close button.
          */
         data object CloseClick : Common()
@@ -2868,25 +2893,6 @@ sealed class VaultItemAction {
              */
             data class PasswordVisibilityClicked(
                 val isVisible: Boolean,
-            ) : Login()
-
-            /**
-             * The user has clicked the Send-to-BitKey button for the password.
-             *
-             * This action is only meaningful for login items that have a non-empty password.
-             * The ViewModel resolves the currently selected BitKey device address (kept in
-             * dialog state) before invoking the [BitKeySendService].
-             */
-            data class SendToBitKeyClick(
-                val deviceAddress: String,
-            ) : Login()
-
-            /**
-             * The user picked a BitKey device from the connection dialog. Triggers a
-             * send-to-BitKey attempt that uses the supplied MAC address.
-             */
-            data class BitKeyDeviceSelected(
-                val deviceAddress: String,
             ) : Login()
         }
 

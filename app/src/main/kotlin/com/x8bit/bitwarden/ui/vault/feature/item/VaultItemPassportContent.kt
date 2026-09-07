@@ -92,6 +92,7 @@ fun VaultItemPassportContent(
                     textFieldTestTag = "PassportItemGivenNameEntry",
                     copyActionTestTag = "PassportCopyGivenNameButton",
                     onCopyClick = vaultPassportItemTypeHandlers.onCopyGivenNameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = passportState
                         .propertyList
                         .toListItemCardStyle(
@@ -115,6 +116,7 @@ fun VaultItemPassportContent(
                     textFieldTestTag = "PassportItemSurnameEntry",
                     copyActionTestTag = "PassportCopySurnameButton",
                     onCopyClick = vaultPassportItemTypeHandlers.onCopySurnameClick,
+                    onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
                     cardStyle = passportState
                         .propertyList
                         .toListItemCardStyle(
@@ -231,6 +233,19 @@ fun VaultItemPassportContent(
                     supportingContent = null,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(passportNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "PassportSendPassportNumberToBitKeyButton",
+                            ),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_passport_number,
@@ -293,6 +308,19 @@ fun VaultItemPassportContent(
                     readOnly = true,
                     supportingContent = null,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(nationalIdentificationNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "PassportSendNationalIdentificationNumberToBitKeyButton",
+                            ),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
@@ -454,6 +482,7 @@ private fun PassportCopyField(
     copyActionTestTag: String,
     onCopyClick: () -> Unit,
     cardStyle: CardStyle,
+    onSendFieldToBitKeyClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BitwardenTextField(
@@ -463,6 +492,12 @@ private fun PassportCopyField(
         readOnly = true,
         singleLine = false,
         actions = {
+            BitwardenStandardIconButton(
+                vectorIconRes = BitwardenDrawable.ic_send,
+                contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                onClick = { onSendFieldToBitKeyClick(value) },
+                modifier = Modifier.testTag(tag = "${copyActionTestTag}SendToBitKey"),
+            )
             BitwardenStandardIconButton(
                 vectorIconRes = BitwardenDrawable.ic_copy,
                 contentDescription = copyContentDescription,
@@ -543,6 +578,7 @@ private val PREVIEW_COMMON_HANDLERS: VaultCommonItemTypeHandlers =
         onPasswordHistoryClick = {},
         onPremiumRequiredClick = {},
         onUpgradeToPremiumClick = {},
+        onSendFieldToBitKeyClick = {},
     )
 
 private val PREVIEW_PASSPORT_HANDLERS: VaultPassportItemTypeHandlers =

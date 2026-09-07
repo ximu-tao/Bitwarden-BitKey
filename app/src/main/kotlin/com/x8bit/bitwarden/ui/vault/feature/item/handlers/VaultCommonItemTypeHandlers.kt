@@ -22,6 +22,7 @@ data class VaultCommonItemTypeHandlers(
     val onPasswordHistoryClick: () -> Unit,
     val onPremiumRequiredClick: () -> Unit,
     val onUpgradeToPremiumClick: () -> Unit,
+    val onSendFieldToBitKeyClick: (String) -> Unit,
 ) {
     @Suppress("UndocumentedPublicClass")
     companion object {
@@ -67,6 +68,11 @@ data class VaultCommonItemTypeHandlers(
                 },
                 onUpgradeToPremiumClick = {
                     viewModel.trySendAction(VaultItemAction.Common.UpgradeToPremiumClick)
+                },
+                onSendFieldToBitKeyClick = { field ->
+                    viewModel.trySendAction(
+                        VaultItemAction.Common.SendFieldToBitKeyClick(field = field),
+                    )
                 },
             )
     }

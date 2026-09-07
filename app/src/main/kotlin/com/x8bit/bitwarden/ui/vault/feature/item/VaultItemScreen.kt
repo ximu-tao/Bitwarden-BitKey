@@ -168,7 +168,7 @@ fun VaultItemScreen(
         },
         onBitKeyDeviceSelected = { address ->
             viewModel.trySendAction(
-                VaultItemAction.ItemType.Login.BitKeyDeviceSelected(address),
+                VaultItemAction.Common.BitKeyDeviceSelected(deviceAddress = address),
             )
         },
     )

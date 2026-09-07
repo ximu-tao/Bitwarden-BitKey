@@ -116,7 +116,11 @@ class FakeBitKeyConnectionManager : BitKeyConnectionManager {
         return Result.success(Unit)
     }
 
-    override suspend fun send(frame: BitKeyFrame, expectAck: Boolean): Result<BitKeyAck> {
+    override suspend fun send(
+        frame: BitKeyFrame,
+        expectAck: Boolean,
+        ackTimeoutMillis: Long,
+    ): Result<BitKeyAck> {
         sentFrames += frame
         if (!expectAck) {
             return Result.success(

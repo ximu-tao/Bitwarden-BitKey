@@ -27,6 +27,7 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,7 +55,9 @@ import timber.log.Timber
  * `android.bluetooth` stack.
  *
  * Responsibilities covered here:
- *  - LE scanning (filtered by [BitKeyConstants.SERVICE_UUID]).
+ *  - LE scanning: callback-level filter that keeps only devices whose advertised
+ *    name starts with [BitKeyConstants.DEVICE_NAME_PREFIX], with a service-UUID
+ *    fallback for advertisements that omit the local name.
  *  - GATT connection, MTU negotiation, and service discovery.
  *  - Bonding with reactive observation of the bond state.
  *  - TX (notify) subscription and RX (write) chunking.
@@ -75,7 +78,23 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
     //region State holders
 
     private val ioDispatcher = Dispatchers.IO
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
+    private val handshakeFailureHandler = CoroutineExceptionHandler { _, exception ->
+        // `runCatching { completeHandshake(g) }` in handleConnected cannot catch
+        // exceptions that are thrown asynchronously from within a suspending function,
+        // so we install a handler on the supervisor scope as a last-resort net. Without
+        // it, a failure like `writeDescriptor returned false` escapes to the JVM
+        // UncaughtExceptionHandler and crashes the host process. See bug-3 of the
+        // BitKey connection crash report.
+        Timber.tag(TAG).w(exception, "Uncaught BitKey coroutine failure")
+        runCatching {
+            transitionToDisconnected(
+                BitKeyConnectionState.Disconnected.Reason.HandshakeFailed,
+            )
+        }
+    }
+    private val scope: CoroutineScope = CoroutineScope(
+        SupervisorJob() + ioDispatcher + handshakeFailureHandler,
+    )
     private val mutex: Mutex = Mutex()
 
     private val _connectionState: MutableStateFlow<BitKeyConnectionState> =
@@ -109,6 +128,14 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
     private var rxCharacteristic: BluetoothGattCharacteristic? = null
     private var txCharacteristic: BluetoothGattCharacteristic? = null
     @Volatile private var released: Boolean = false
+
+    /**
+     * Guards [handleConnected] so the handshake coroutine only runs once per connection.
+     * Some Android BLE stacks deliver `STATE_CONNECTED` multiple times for the same
+     * `connectGatt()` call; without this guard the second invocation would race the
+     * first on `writeDescriptor` and fail with `writeDescriptor returned false`.
+     */
+    @Volatile private var handshakeInFlight: Boolean = false
 
     //endregion
 
@@ -167,6 +194,9 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
                 deviceAddress = deviceAddress,
                 stage = BitKeyConnectionState.Connecting.Stage.Bonding,
             )
+            // Reset the handshake idempotency guard so a fresh connect() can launch a
+            // new handshake even if a previous one had been completed and cleaned up.
+            handshakeInFlight = false
             gatt = remote.connectGatt(
                 /* context = */ context,
                 /* autoConnect = */ false,
@@ -180,8 +210,16 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
     ): Result<BitKeyConnectionState.Connected> = resultOf {
         checkReleased()
         withTimeoutOrNull(timeoutMillis) {
-            connectionState.first { it is BitKeyConnectionState.Connected }
-                as BitKeyConnectionState.Connected
+            connectionState
+                .first { it is BitKeyConnectionState.Connected || it is BitKeyConnectionState.Disconnected }
+                .let { terminal ->
+                    if (terminal is BitKeyConnectionState.Connected) {
+                        terminal
+                    } else {
+                        val reason = (terminal as BitKeyConnectionState.Disconnected).reason
+                        error("Connection failed: reason=$reason")
+                    }
+                }
         } ?: error("Connection did not reach Connected within ${timeoutMillis}ms")
     }
 
@@ -209,41 +247,44 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
 
     //region Send
 
-    override suspend fun send(frame: BitKeyFrame, expectAck: Boolean): Result<BitKeyAck> =
-        resultOf {
-            checkReleased()
-            if (expectAck && !frame.requestsAck) {
-                error("expectAck=true but the frame did not set FLAG_ACK")
-            }
-            val activeGatt = gatt ?: error("Not connected; call connect() first.")
-            val rx = rxCharacteristic ?: error("RX characteristic is not yet available.")
-            val ackDeferred = if (expectAck) {
-                val deferred = CompletableDeferred<BitKeyFrame>()
-                synchronized(ackWaiters) { ackWaiters[frame.seq] = deferred }
-                deferred
+    override suspend fun send(
+        frame: BitKeyFrame,
+        expectAck: Boolean,
+        ackTimeoutMillis: Long,
+    ): Result<BitKeyAck> = resultOf {
+        checkReleased()
+        if (expectAck && !frame.requestsAck) {
+            error("expectAck=true but the frame did not set FLAG_ACK")
+        }
+        val activeGatt = gatt ?: error("Not connected; call connect() first.")
+        val rx = rxCharacteristic ?: error("RX characteristic is not yet available.")
+        val ackDeferred = if (expectAck) {
+            val deferred = CompletableDeferred<BitKeyFrame>()
+            synchronized(ackWaiters) { ackWaiters[frame.seq] = deferred }
+            deferred
+        } else {
+            null
+        }
+        try {
+            writeInChunks(activeGatt, rx, BitKeyFrameEncoder.encode(frame))
+            if (ackDeferred != null) {
+                val ackFrame = withTimeout(ackTimeoutMillis) {
+                    ackDeferred.await()
+                }
+                decodeAck(ackFrame)
             } else {
-                null
+                BitKeyAck(
+                    seq = frame.seq,
+                    error = BitKeyError.None,
+                    extra = ByteArray(0),
+                )
             }
-            try {
-                writeInChunks(activeGatt, rx, BitKeyFrameEncoder.encode(frame))
-                if (ackDeferred != null) {
-                    val ackFrame = withTimeout(BitKeyConstants.DEFAULT_ACK_TIMEOUT_MS) {
-                        ackDeferred.await()
-                    }
-                    decodeAck(ackFrame)
-                } else {
-                    BitKeyAck(
-                        seq = frame.seq,
-                        error = BitKeyError.None,
-                        extra = ByteArray(0),
-                    )
-                }
-            } finally {
-                if (ackDeferred != null) {
-                    synchronized(ackWaiters) { ackWaiters.remove(frame.seq) }
-                }
+        } finally {
+            if (ackDeferred != null) {
+                synchronized(ackWaiters) { ackWaiters.remove(frame.seq) }
             }
         }
+    }
 
     //endregion
 
@@ -277,10 +318,17 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
 
         override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
             Timber.tag(TAG).d("onServicesDiscovered status=%d", status)
+            // Signal the coroutine inside `awaitServicesDiscovery` so its wait completes.
+            // DO NOT launch another handshake here: `handleConnected` already started the
+            // single handshake coroutine, and re-entering `completeHandshake` from this
+            // callback races with the original coroutine, causing duplicate
+            // `requestMtu` / `discoverServices` / `setCharacteristicNotification` /
+            // `writeDescriptor` calls. On many BLE stacks the second `writeDescriptor`
+            // returns false while the first is still pending, which surfaces as the
+            // `writeDescriptor returned false` IllegalStateException that the
+            // CoroutineExceptionHandler was catching in the host process.
             servicesWaiter.complete(status)
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                scope.launch(ioDispatcher) { completeHandshake(g) }
-            } else {
+            if (status != BluetoothGatt.GATT_SUCCESS) {
                 transitionToDisconnected(
                     BitKeyConnectionState.Disconnected.Reason.ServiceDiscoveryFailed,
                 )
@@ -380,9 +428,28 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
     }
 
     private fun handleConnected(g: BluetoothGatt) {
+        // Idempotency guard: some Android BLE stacks deliver STATE_CONNECTED more than
+        // once per connection (especially right after a service-discovery callback).
+        // Re-entering the handshake launches a parallel `requestMtu` /
+        // `discoverServices` / `writeDescriptor` chain that races with the original and
+        // trips the "writeDescriptor returned false" path. We use a per-instance flag
+        // to ensure at most one handshake coroutine runs per `connect()`.
+        if (handshakeInFlight) return
+        handshakeInFlight = true
+        // We deliberately do NOT wrap this in `runCatching`: a `runCatching` block
+        // around a `suspend` call only catches exceptions that are thrown synchronously
+        // by the suspend body. Exceptions that surface asynchronously from the suspension
+        // machinery (e.g. `IllegalStateException: writeDescriptor returned false` from
+        // `awaitSubscribe`) bypass the runCatching block and are routed to the
+        // `CoroutineExceptionHandler` installed on [scope] above, which transitions the
+        // connection to `Disconnected(HandshakeFailed)` instead of crashing the host
+        // process.
         scope.launch(ioDispatcher) {
-            runCatching { completeHandshake(g) }
-                .onFailure { Timber.tag(TAG).w(it, "Handshake failed") }
+            try {
+                completeHandshake(g)
+            } finally {
+                handshakeInFlight = false
+            }
         }
     }
 
@@ -637,6 +704,10 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
             val callback = object : ScanCallback() {
                 override fun onScanResult(resultType: Int, result: ScanResult) {
                     val record = result.scanRecord ?: return
+                    val uuids = record.serviceUuids
+                        ?.mapNotNull { it.uuid }
+                        .orEmpty()
+                    if (!isBitKeyAdvertisement(record.deviceName, uuids)) return
                     handler(result.device.address, result.rssi, record.deviceName)
                 }
             }
@@ -669,6 +740,23 @@ class BluetoothGattBitKeyConnectionManager @Inject constructor(
 }
 
 //region Coroutine glue
+
+/**
+ * Returns true if a scan result should be surfaced as a BitKey peripheral.
+ *
+ * The check mirrors the firmware advertising record: when the local name is
+ * present, it must start with [BitKeyConstants.DEVICE_NAME_PREFIX]. When the
+ * name is missing (some Android stacks omit the local name during early
+ * scan results), the BitKey GATT service UUID is used as a fallback.
+ */
+internal fun isBitKeyAdvertisement(
+    advertisedName: String?,
+    serviceUuids: List<UUID>,
+): Boolean = when {
+    !advertisedName.isNullOrEmpty() ->
+        advertisedName.startsWith(BitKeyConstants.DEVICE_NAME_PREFIX)
+    else -> serviceUuids.contains(BitKeyConstants.SERVICE_UUID)
+}
 
 /**
  * Bridges a suspending block to a [Result] while preserving structured cancellation.

@@ -2,6 +2,7 @@ package com.x8bit.bitwarden.ui.vault.feature.item.dialog
 
 import android.Manifest
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -176,6 +177,10 @@ fun BitKeyConnectionDialog(
             modifier = Modifier
                 .testTag("BitKeyConnectionDialog")
                 .requiredHeightIn(max = configuration.maxDialogHeight)
+                .background(
+                    color = BitwardenTheme.colorScheme.background.primary,
+                    shape = BitwardenTheme.shapes.dialog,
+                )
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.End,
         ) {

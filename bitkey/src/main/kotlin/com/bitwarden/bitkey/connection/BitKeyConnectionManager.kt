@@ -3,6 +3,7 @@ package com.bitwarden.bitkey.connection
 import com.bitwarden.bitkey.model.BitKeyAck
 import com.bitwarden.bitkey.model.BitKeyConnectionState
 import com.bitwarden.bitkey.model.BitKeyDiscoveredDevice
+import com.bitwarden.bitkey.protocol.BitKeyConstants
 import com.bitwarden.bitkey.protocol.BitKeyFrame
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,10 +86,18 @@ interface BitKeyConnectionManager {
      * `Result`. When [expectAck] is `false`, the function returns once the bytes have
      * been handed to the radio and reports success/failure of that step.
      *
+     * [ackTimeoutMillis] overrides the default ACK timeout. Use this when sending
+     * frames that take longer to process on the device (e.g. `TYPE_TEXT` over a
+     * long payload) without penalising shorter frames such as `SESSION_START`.
+     *
      * Payload bytes larger than the negotiated MTU are automatically split into
      * multiple writes — fragmentation is invisible to the caller.
      */
-    suspend fun send(frame: BitKeyFrame, expectAck: Boolean = false): Result<BitKeyAck>
+    suspend fun send(
+        frame: BitKeyFrame,
+        expectAck: Boolean = false,
+        ackTimeoutMillis: Long = BitKeyConstants.DEFAULT_ACK_TIMEOUT_MS,
+    ): Result<BitKeyAck>
 
     /**
      * Releases any internal resources held by this manager. After this call, every

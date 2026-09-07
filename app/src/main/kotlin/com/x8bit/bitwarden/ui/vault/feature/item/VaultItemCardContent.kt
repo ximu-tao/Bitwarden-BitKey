@@ -98,6 +98,15 @@ fun VaultItemCardContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(numberData.number)
+                            },
+                            modifier = Modifier.testTag(tag = "CardSendToBitKeyNumberButton"),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(id = BitwardenString.copy_number),
                             onClick = vaultCardItemTypeHandlers.onCopyNumberClick,
@@ -177,6 +186,16 @@ fun VaultItemCardContent(
                     readOnly = true,
                     singleLine = false,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(securityCodeData.code)
+                            },
+                            modifier = Modifier
+                                .testTag(tag = "CardSendToBitKeySecurityCodeButton"),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(

@@ -17,7 +17,6 @@ data class VaultLoginItemTypeHandlers(
     val onCopyUsernameClick: () -> Unit,
     val onLaunchUriClick: (String) -> Unit,
     val onShowPasswordClick: (isVisible: Boolean) -> Unit,
-    val onSendToBitKeyClick: () -> Unit,
 ) {
     @Suppress("UndocumentedPublicClass")
     companion object {
@@ -55,11 +54,6 @@ data class VaultLoginItemTypeHandlers(
                 onShowPasswordClick = {
                     viewModel.trySendAction(
                         VaultItemAction.ItemType.Login.PasswordVisibilityClicked(it),
-                    )
-                },
-                onSendToBitKeyClick = {
-                    viewModel.trySendAction(
-                        VaultItemAction.ItemType.Login.SendToBitKeyClick(deviceAddress = ""),
                     )
                 },
             )

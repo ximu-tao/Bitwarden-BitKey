@@ -45,6 +45,15 @@ object BitKeyConstants {
      */
     val SERVICE_UUID: UUID = UUID.fromString("0000BBBB-0000-1000-8000-00805F9B34FB")
 
+    /**
+     * Prefix used by the Android scan callback to drop advertisements from
+     * non-BitKey peripherals. The firmware (`BitKey/src/ble/ble_service.cpp`)
+     * broadcasts the local name as `BitKey`; future firmware variants such as
+     * `BitKey-Pro` or `BitKeyV2` will continue to match this prefix without an
+     * Android-side change.
+     */
+    const val DEVICE_NAME_PREFIX: String = "BitKey"
+
     /** RX characteristic: host -> device (write). */
     val RX_CHARACTERISTIC_UUID: UUID = UUID.fromString("0000BB01-0000-1000-8000-00805F9B34FB")
 
@@ -57,6 +66,15 @@ object BitKeyConstants {
 
     /** Default per-write ACK timeout used by the connection manager. */
     const val DEFAULT_ACK_TIMEOUT_MS: Long = 500L
+
+    /**
+     * ACK timeout used for `TYPE_TEXT` frames. The device processes each character with a
+     * press/release cycle that takes ~14 ms (8 ms key delay + 6 ms char delay), so a 200
+     * character password would need ~2.8 s before it sends the final ACK. 3 s covers the
+     * realistic worst case with a small safety margin; shorter frames still use
+     * [DEFAULT_ACK_TIMEOUT_MS].
+     */
+    const val TYPE_TEXT_ACK_TIMEOUT_MS: Long = 3_000L
 
     /**
      * Preferred ATT MTU. The firmware is built around 512-byte frames, so the host should

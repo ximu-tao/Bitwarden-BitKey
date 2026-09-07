@@ -1,6 +1,7 @@
 package com.bitwarden.bitkey.send
 
 import com.bitwarden.bitkey.connection.BitKeyConnectionManager
+import com.bitwarden.bitkey.protocol.BitKeyConstants
 import com.bitwarden.bitkey.protocol.BitKeyError
 import com.bitwarden.bitkey.protocol.BitKeyFragmenter
 import com.bitwarden.bitkey.protocol.BitKeyProtocol
@@ -121,7 +122,11 @@ class BitKeySendService @Inject constructor(
             expectAck = true,
         )
         for (frame in frames) {
-            val result = connectionManager.send(frame, expectAck = true)
+            val result = connectionManager.send(
+                frame,
+                expectAck = true,
+                ackTimeoutMillis = BitKeyConstants.TYPE_TEXT_ACK_TIMEOUT_MS,
+            )
             if (result.isFailure) {
                 return mapSendFailure(result)
             }
@@ -131,8 +136,12 @@ class BitKeySendService @Inject constructor(
             }
         }
 
+        // sessionEnd must use a sequence number that does not collide with any of the
+        // type_text fragments we just sent. We pre-compute it from the fragment count so
+        // the chooser survives arbitrary payload sizes and never re-uses an in-flight seq.
+        val sessionEndSeq = ((config.sessionStartSeq + 1 + frames.size) and 0xFF)
         val endResult = connectionManager.send(
-            BitKeyProtocol.sessionEnd(config.sessionEndSeq),
+            BitKeyProtocol.sessionEnd(sessionEndSeq),
             expectAck = true,
         )
         if (endResult.isFailure) {

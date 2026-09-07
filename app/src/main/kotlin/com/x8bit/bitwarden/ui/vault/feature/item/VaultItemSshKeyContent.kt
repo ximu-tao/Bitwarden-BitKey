@@ -70,6 +70,16 @@ fun VaultItemSshKeyContent(
                 readOnly = true,
                 actions = {
                     BitwardenStandardIconButton(
+                        vectorIconRes = BitwardenDrawable.ic_send,
+                        contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                        onClick = {
+                            vaultCommonItemTypeHandlers
+                                .onSendFieldToBitKeyClick(sshKeyItemState.privateKey)
+                        },
+                        modifier = Modifier
+                            .testTag(tag = "SshKeySendPrivateKeyToBitKeyButton"),
+                    )
+                    BitwardenStandardIconButton(
                         vectorIconRes = BitwardenDrawable.ic_copy,
                         contentDescription = stringResource(id = BitwardenString.copy_private_key),
                         onClick = vaultSshKeyItemTypeHandlers.onCopyPrivateKeyClick,
@@ -97,6 +107,16 @@ fun VaultItemSshKeyContent(
                 readOnly = true,
                 actions = {
                     BitwardenStandardIconButton(
+                        vectorIconRes = BitwardenDrawable.ic_send,
+                        contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                        onClick = {
+                            vaultCommonItemTypeHandlers
+                                .onSendFieldToBitKeyClick(sshKeyItemState.publicKey)
+                        },
+                        modifier = Modifier
+                            .testTag(tag = "SshKeySendPublicKeyToBitKeyButton"),
+                    )
+                    BitwardenStandardIconButton(
                         vectorIconRes = BitwardenDrawable.ic_copy,
                         contentDescription = stringResource(id = BitwardenString.copy_public_key),
                         onClick = vaultSshKeyItemTypeHandlers.onCopyPublicKeyClick,
@@ -120,6 +140,16 @@ fun VaultItemSshKeyContent(
                 singleLine = false,
                 readOnly = true,
                 actions = {
+                    BitwardenStandardIconButton(
+                        vectorIconRes = BitwardenDrawable.ic_send,
+                        contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                        onClick = {
+                            vaultCommonItemTypeHandlers
+                                .onSendFieldToBitKeyClick(sshKeyItemState.fingerprint)
+                        },
+                        modifier = Modifier
+                            .testTag(tag = "SshKeySendFingerprintToBitKeyButton"),
+                    )
                     BitwardenStandardIconButton(
                         vectorIconRes = BitwardenDrawable.ic_copy,
                         contentDescription = stringResource(id = BitwardenString.copy_fingerprint),

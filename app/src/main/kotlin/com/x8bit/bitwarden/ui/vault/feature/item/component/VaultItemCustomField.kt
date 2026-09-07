@@ -28,6 +28,7 @@ fun CustomField(
         VaultItemState.ViewState.Content.Common.Custom.HiddenField,
         Boolean,
     ) -> Unit,
+    onSendFieldToBitKeyClick: (String) -> Unit,
     cardStyle: CardStyle,
     modifier: Modifier = Modifier,
 ) {
@@ -56,6 +57,14 @@ fun CustomField(
                     showPasswordTestTag = "CustomFieldShowPasswordButton",
                     passwordFieldTestTag = "CustomFieldValue",
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                            onClick = {
+                                onSendFieldToBitKeyClick(customField.value)
+                            },
+                            modifier = Modifier.testTag("CustomFieldSendToBitKeyButton"),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(id = BitwardenString.copy),
@@ -108,6 +117,14 @@ fun CustomField(
                 textFieldTestTag = "CustomFieldValue",
                 actions = {
                     if (customField.isCopyable) {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                            onClick = {
+                                onSendFieldToBitKeyClick(customField.value)
+                            },
+                            modifier = Modifier.testTag("CustomFieldSendToBitKeyButton"),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(id = BitwardenString.copy),

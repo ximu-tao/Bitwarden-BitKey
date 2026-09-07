@@ -108,6 +108,19 @@ fun VaultItemBankAccountContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(nameOnAccount)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendNameOnAccountToBitKeyButton",
+                            ),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_name_on_account,
@@ -169,6 +182,19 @@ fun VaultItemBankAccountContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(accountNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendAccountNumberToBitKeyButton",
+                            ),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_account_number,
@@ -205,6 +231,19 @@ fun VaultItemBankAccountContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(routingNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendRoutingNumberToBitKeyButton",
+                            ),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_routing_number,
@@ -239,6 +278,19 @@ fun VaultItemBankAccountContent(
                     readOnly = true,
                     singleLine = false,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(branchNumber)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendBranchNumberToBitKeyButton",
+                            ),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
@@ -278,6 +330,18 @@ fun VaultItemBankAccountContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(pin)
+                            },
+                            modifier = Modifier
+                                .testTag(tag = "BankAccountSendPinToBitKeyButton"),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_pin,
@@ -311,6 +375,19 @@ fun VaultItemBankAccountContent(
                     readOnly = true,
                     singleLine = false,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(swiftCode)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendSwiftCodeToBitKeyButton",
+                            ),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
@@ -350,6 +427,18 @@ fun VaultItemBankAccountContent(
                     singleLine = false,
                     actions = {
                         BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(iban)
+                            },
+                            modifier = Modifier
+                                .testTag(tag = "BankAccountSendIbanToBitKeyButton"),
+                        )
+                        BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(
                                 id = BitwardenString.copy_iban,
@@ -383,6 +472,19 @@ fun VaultItemBankAccountContent(
                     readOnly = true,
                     singleLine = false,
                     actions = {
+                        BitwardenStandardIconButton(
+                            vectorIconRes = BitwardenDrawable.ic_send,
+                            contentDescription = stringResource(
+                                id = BitwardenString.bitkey_send,
+                            ),
+                            onClick = {
+                                vaultCommonItemTypeHandlers
+                                    .onSendFieldToBitKeyClick(phone)
+                            },
+                            modifier = Modifier.testTag(
+                                tag = "BankAccountSendBankContactPhoneToBitKeyButton",
+                            ),
+                        )
                         BitwardenStandardIconButton(
                             vectorIconRes = BitwardenDrawable.ic_copy,
                             contentDescription = stringResource(

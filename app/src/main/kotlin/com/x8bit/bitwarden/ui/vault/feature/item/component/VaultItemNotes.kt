@@ -52,6 +52,14 @@ fun LazyListScope.vaultItemNotes(
             singleLine = false,
             actions = {
                 BitwardenStandardIconButton(
+                    vectorIconRes = BitwardenDrawable.ic_send,
+                    contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                    onClick = {
+                        vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick(notes)
+                    },
+                    modifier = Modifier.testTag(tag = "CipherNotesSendToBitKeyButton"),
+                )
+                BitwardenStandardIconButton(
                     vectorIconRes = BitwardenDrawable.ic_copy,
                     contentDescription = stringResource(id = BitwardenString.copy_notes),
                     onClick = vaultCommonItemTypeHandlers.onCopyNotesClick,

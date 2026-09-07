@@ -49,6 +49,7 @@ fun LazyListScope.vaultItemCustomFields(
             onCopyCustomHiddenField = vaultCommonItemTypeHandlers.onCopyCustomHiddenField,
             onCopyCustomTextField = vaultCommonItemTypeHandlers.onCopyCustomTextField,
             onShowHiddenFieldClick = vaultCommonItemTypeHandlers.onShowHiddenFieldClick,
+            onSendFieldToBitKeyClick = vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick,
             cardStyle = CardStyle.Full,
             modifier = Modifier
                 .fillMaxWidth()

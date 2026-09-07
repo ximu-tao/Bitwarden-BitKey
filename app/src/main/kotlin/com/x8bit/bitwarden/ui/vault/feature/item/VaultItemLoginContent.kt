@@ -94,6 +94,9 @@ fun VaultItemLoginContent(
                 UsernameField(
                     username = username,
                     onCopyUsernameClick = vaultLoginItemTypeHandlers.onCopyUsernameClick,
+                    onSendToBitKeyClick = {
+                        vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick(username)
+                    },
                     cardStyle = loginItemState
                         .passwordData
                         ?.let { CardStyle.Top(dividerPadding = 0.dp) }
@@ -113,7 +116,9 @@ fun VaultItemLoginContent(
                     onShowPasswordClick = vaultLoginItemTypeHandlers.onShowPasswordClick,
                     onCheckForBreachClick = vaultLoginItemTypeHandlers.onCheckForBreachClick,
                     onCopyPasswordClick = vaultLoginItemTypeHandlers.onCopyPasswordClick,
-                    onSendToBitKeyClick = vaultLoginItemTypeHandlers.onSendToBitKeyClick,
+                    onSendToBitKeyClick = {
+                        vaultCommonItemTypeHandlers.onSendFieldToBitKeyClick(passwordData.password)
+                    },
                     cardStyle = loginItemState
                         .username
                         ?.let { CardStyle.Bottom }
@@ -412,6 +417,7 @@ private fun UriField(
 private fun UsernameField(
     username: String,
     onCopyUsernameClick: () -> Unit,
+    onSendToBitKeyClick: () -> Unit,
     cardStyle: CardStyle,
     modifier: Modifier = Modifier,
 ) {
@@ -422,6 +428,12 @@ private fun UsernameField(
         readOnly = true,
         singleLine = false,
         actions = {
+            BitwardenStandardIconButton(
+                vectorIconRes = BitwardenDrawable.ic_send,
+                contentDescription = stringResource(id = BitwardenString.bitkey_send),
+                onClick = onSendToBitKeyClick,
+                modifier = Modifier.testTag(tag = "LoginSendUsernameToBitKeyButton"),
+            )
             BitwardenStandardIconButton(
                 vectorIconRes = BitwardenDrawable.ic_copy,
                 contentDescription = stringResource(id = BitwardenString.copy_username),
