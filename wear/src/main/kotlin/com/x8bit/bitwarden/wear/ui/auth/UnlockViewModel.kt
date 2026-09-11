@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.x8bit.bitwarden.data.auth.manager.UserStateManager
+import com.x8bit.bitwarden.data.auth.repository.AuthRepository
+import com.x8bit.bitwarden.data.auth.repository.model.LogoutReason
 import com.x8bit.bitwarden.data.vault.repository.VaultRepository
 import com.x8bit.bitwarden.data.vault.repository.model.VaultUnlockResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class UnlockViewModel @Inject constructor(
     private val vaultRepository: VaultRepository,
+    private val authRepository: AuthRepository,
     userStateManager: UserStateManager,
 ) : ViewModel() {
 
@@ -40,6 +43,12 @@ class UnlockViewModel @Inject constructor(
      */
     private val _unlockSuccessEvent = MutableSharedFlow<Unit>()
     val unlockSuccessEvent: SharedFlow<Unit> = _unlockSuccessEvent.asSharedFlow()
+
+    /**
+     * Emits a single event after the user opts to log out.
+     */
+    private val _logoutSuccessEvent = MutableSharedFlow<Unit>()
+    val logoutSuccessEvent: SharedFlow<Unit> = _logoutSuccessEvent.asSharedFlow()
 
     init {
         // The account email is read once at start-up; the unlock screen only
@@ -96,6 +105,16 @@ class UnlockViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Logs out of the current account so the user can sign in again from the
+     * login screen. This is the recovery path when unlocking is impossible
+     * (e.g. the Android Keystore keys backing the account were lost).
+     */
+    fun logout() {
+        authRepository.logout(reason = LogoutReason.Click(source = "UnlockViewModel"))
+        viewModelScope.launch { _logoutSuccessEvent.emit(Unit) }
     }
 
     private companion object {

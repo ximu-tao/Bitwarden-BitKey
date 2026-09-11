@@ -85,6 +85,11 @@ fun WearNavHost(
                         popUpTo(WearRoute.Unlock.route) { inclusive = true }
                     }
                 },
+                onLogout = {
+                    navController.navigate(WearRoute.Login.route) {
+                        popUpTo(WearRoute.Unlock.route) { inclusive = true }
+                    }
+                },
             )
         }
         composable(WearRoute.Home.route) {

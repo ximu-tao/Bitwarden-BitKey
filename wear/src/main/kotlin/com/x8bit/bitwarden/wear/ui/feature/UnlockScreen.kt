@@ -17,6 +17,7 @@ import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.TextButton
 import com.x8bit.bitwarden.wear.ui.auth.UnlockViewModel
 
 /**
@@ -30,12 +31,16 @@ import com.x8bit.bitwarden.wear.ui.auth.UnlockViewModel
 @Composable
 fun UnlockScreen(
     onUnlockSuccess: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: UnlockViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
 
     LaunchedEffect(Unit) {
         viewModel.unlockSuccessEvent.collect { onUnlockSuccess() }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.logoutSuccessEvent.collect { onLogout() }
     }
 
     ScalingLazyColumn(
@@ -84,6 +89,20 @@ fun UnlockScreen(
                 } else {
                     Text(text = "解锁")
                 }
+            }
+        }
+        item {
+            TextButton(
+                onClick = viewModel::logout,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "退出登录",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
             }
         }
         uiState.errorMessage?.let { errorMessage ->
