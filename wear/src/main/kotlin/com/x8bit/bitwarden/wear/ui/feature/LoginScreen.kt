@@ -30,14 +30,14 @@ import com.x8bit.bitwarden.wear.ui.auth.LoginViewModel
  */
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (vaultIsUnlocked: Boolean) -> Unit,
     onOpenEnvironment: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
 
     LaunchedEffect(Unit) {
-        viewModel.loginSuccessEvent.collect { onLoginSuccess() }
+        viewModel.loginSuccessEvent.collect { vaultIsUnlocked -> onLoginSuccess(vaultIsUnlocked) }
     }
 
     ScalingLazyColumn(

@@ -6,9 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bitwarden.network.model.TwoFactorDataModel
+import com.x8bit.bitwarden.data.auth.manager.UserStateManager
 import com.x8bit.bitwarden.data.auth.repository.AuthRepository
 import com.x8bit.bitwarden.data.auth.repository.model.LoginResult
 import com.x8bit.bitwarden.data.platform.repository.EnvironmentRepository
+import com.x8bit.bitwarden.data.vault.manager.VaultLockManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -32,7 +34,12 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val environmentRepository: EnvironmentRepository,
+    private val vaultLockManager: VaultLockManager,
+    private val userStateManager: UserStateManager,
 ) : ViewModel() {
+
+    private val userStateManagerActiveUserId: String?
+        get() = userStateManager.userStateFlow.value?.activeUserId
 
     /**
      * The current login form state.
@@ -55,10 +62,15 @@ class LoginViewModel @Inject constructor(
     }
 
     /**
-     * Emits a single event when login completes successfully.
+     * Emits a single event when login completes successfully, with `true` if
+     * the vault is already unlocked.
+     *
+     * Logging in with a master password unlocks the vault immediately (the
+     * auth flow runs the SDK crypto initialization), so the caller can skip
+     * the unlock screen and go directly to the home screen.
      */
-    private val _loginSuccessEvent = MutableSharedFlow<Unit>()
-    val loginSuccessEvent: SharedFlow<Unit> = _loginSuccessEvent.asSharedFlow()
+    private val _loginSuccessEvent = MutableSharedFlow<Boolean>()
+    val loginSuccessEvent: SharedFlow<Boolean> = _loginSuccessEvent.asSharedFlow()
 
     /**
      * The UI state of the login screen.
@@ -135,7 +147,10 @@ class LoginViewModel @Inject constructor(
         when (loginResult) {
             is LoginResult.Success -> {
                 uiState = uiState.copy(isLoading = false)
-                viewModelScope.launch { _loginSuccessEvent.emit(Unit) }
+                val vaultIsUnlocked = userStateManagerActiveUserId?.let {
+                    vaultLockManager.isVaultUnlocked(it)
+                } == true
+                viewModelScope.launch { _loginSuccessEvent.emit(vaultIsUnlocked) }
             }
 
             // The wear UI keeps the two-factor step inline rather than

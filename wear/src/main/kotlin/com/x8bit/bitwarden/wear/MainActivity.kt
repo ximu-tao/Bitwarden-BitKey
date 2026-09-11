@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.lifecycle.ViewModel
 import com.x8bit.bitwarden.data.auth.manager.UserStateManager
+import com.x8bit.bitwarden.data.vault.manager.VaultLockManager
 import com.x8bit.bitwarden.wear.ui.navigation.WearNavHost
 import com.x8bit.bitwarden.wear.ui.navigation.WearRoute
 import com.x8bit.bitwarden.wear.ui.theme.BitwardenWearTheme
@@ -41,14 +42,23 @@ class MainActivity : ComponentActivity() {
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val userStateManager: UserStateManager,
+    private val vaultLockManager: VaultLockManager,
 ) : ViewModel() {
 
     /**
-     * Returns the route the app should start on: unlock if an account already
-     * exists, login otherwise.
+     * Returns the route the app should start on:
+     * - home if an account exists and its vault is already unlocked (e.g. a
+     *   fresh login or an auto-unlock left the client initialized),
+     * - unlock if an account exists but the vault is locked,
+     * - login otherwise.
      */
     fun startRoute(): String {
-        val hasActiveAccount = userStateManager.userStateFlow.value?.activeUserId != null
-        return if (hasActiveAccount) WearRoute.Unlock.route else WearRoute.Login.route
+        val activeUserId = userStateManager.userStateFlow.value?.activeUserId
+            ?: return WearRoute.Login.route
+        return if (vaultLockManager.isVaultUnlocked(activeUserId)) {
+            WearRoute.Home.route
+        } else {
+            WearRoute.Unlock.route
+        }
     }
 }

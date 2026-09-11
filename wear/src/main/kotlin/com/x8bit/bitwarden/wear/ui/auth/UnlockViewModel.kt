@@ -29,7 +29,7 @@ import javax.inject.Inject
 class UnlockViewModel @Inject constructor(
     private val vaultRepository: VaultRepository,
     private val authRepository: AuthRepository,
-    userStateManager: UserStateManager,
+    private val userStateManager: UserStateManager,
 ) : ViewModel() {
 
     /**
@@ -77,9 +77,19 @@ class UnlockViewModel @Inject constructor(
 
     /**
      * Attempts to unlock the vault with the entered password.
+     *
+     * If the vault is already unlocked (e.g. after a fresh login, where the
+     * auth flow unlocks the vault automatically, or after an auto-unlock
+     * with a stored key), re-initializing the SDK crypto would fail with a
+     * `CryptoInitialization` error, so we short-circuit to success instead.
      */
     fun unlock() {
         if (uiState.isLoading) return
+        val activeUserId = userStateManager.userStateFlow.value?.activeUserId
+        if (activeUserId != null && vaultRepository.isVaultUnlocked(activeUserId)) {
+            viewModelScope.launch { _unlockSuccessEvent.emit(Unit) }
+            return
+        }
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
             when (val result = vaultRepository.unlockVaultWithMasterPassword(uiState.password)) {

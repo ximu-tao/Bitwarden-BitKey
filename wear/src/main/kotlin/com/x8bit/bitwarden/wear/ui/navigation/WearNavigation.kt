@@ -65,8 +65,16 @@ fun WearNavHost(
     ) {
         composable(WearRoute.Login.route) {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(WearRoute.Unlock.route) {
+                onLoginSuccess = { vaultIsUnlocked ->
+                    // A master-password login completes with the vault already
+                    // unlocked (the auth flow initializes the SDK crypto), so we
+                    // can skip the unlock screen and go straight home.
+                    val targetRoute = if (vaultIsUnlocked) {
+                        WearRoute.Home.route
+                    } else {
+                        WearRoute.Unlock.route
+                    }
+                    navController.navigate(targetRoute) {
                         popUpTo(WearRoute.Login.route) { inclusive = true }
                     }
                 },
