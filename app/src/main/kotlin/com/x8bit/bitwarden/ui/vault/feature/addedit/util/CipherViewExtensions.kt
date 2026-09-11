@@ -6,7 +6,7 @@ import com.bitwarden.collections.CollectionType
 import com.bitwarden.collections.CollectionView
 import com.bitwarden.core.data.util.toFormattedDateTimeStyle
 import com.bitwarden.core.util.persistentListOfNotNull
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
 import com.bitwarden.vault.CipherRepromptType

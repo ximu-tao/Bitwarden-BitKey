@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.core.net.toUri
 import com.bitwarden.core.data.repository.util.bufferedMutableSharedFlow
 import com.bitwarden.ui.platform.manager.IntentManager
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.data.billing.repository.model.PremiumSubscriptionStatus

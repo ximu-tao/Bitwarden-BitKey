@@ -1,6 +1,6 @@
 package com.x8bit.bitwarden.ui.vault.feature.addedit.util
 
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.x8bit.bitwarden.ui.vault.feature.addedit.VaultAddEditState
 
 /**

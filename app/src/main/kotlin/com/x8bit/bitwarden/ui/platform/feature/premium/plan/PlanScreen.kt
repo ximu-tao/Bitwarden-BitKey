@@ -75,7 +75,7 @@ import com.bitwarden.ui.platform.components.scaffold.BitwardenScaffold
 import com.bitwarden.ui.platform.components.util.rememberVectorPainter
 import com.bitwarden.ui.platform.composition.LocalIntentManager
 import com.bitwarden.ui.platform.manager.IntentManager
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenPlurals
 import com.bitwarden.ui.platform.resource.BitwardenString

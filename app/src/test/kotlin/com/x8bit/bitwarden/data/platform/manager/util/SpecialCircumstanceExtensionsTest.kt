@@ -2,7 +2,7 @@ package com.x8bit.bitwarden.data.platform.manager.util
 
 import androidx.core.os.bundleOf
 import com.bitwarden.cxf.model.ImportCredentialsRequestData
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.x8bit.bitwarden.data.autofill.model.AutofillSaveItem
 import com.x8bit.bitwarden.data.autofill.model.AutofillSelectionData
 import com.x8bit.bitwarden.data.credentials.model.CreateCredentialRequest

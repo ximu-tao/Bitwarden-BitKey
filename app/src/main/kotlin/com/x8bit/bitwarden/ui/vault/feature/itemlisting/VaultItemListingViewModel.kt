@@ -29,7 +29,7 @@ import com.bitwarden.ui.platform.components.account.model.AccountSummary
 import com.bitwarden.ui.platform.components.icon.model.IconData
 import com.bitwarden.ui.platform.components.snackbar.model.BitwardenSnackbarData
 import com.bitwarden.ui.platform.manager.snackbar.SnackbarRelayManager
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.Text
 import com.bitwarden.ui.util.asText
@@ -45,7 +45,7 @@ import com.x8bit.bitwarden.data.auth.repository.model.ValidatePinResult
 import com.x8bit.bitwarden.data.autofill.accessibility.manager.AccessibilitySelectionManager
 import com.x8bit.bitwarden.data.autofill.manager.AutofillSelectionManager
 import com.x8bit.bitwarden.data.autofill.model.AutofillSelectionData
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
 import com.x8bit.bitwarden.data.billing.manager.PremiumStateManager
 import com.x8bit.bitwarden.data.credentials.manager.BitwardenCredentialManager
 import com.x8bit.bitwarden.data.credentials.manager.OriginManager
@@ -106,10 +106,10 @@ import com.x8bit.bitwarden.ui.vault.feature.itemlisting.util.toSendItemType
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.util.toVaultItemCipherType
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.util.toViewState
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.util.updateWithAdditionalDataIfNecessary
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.toAccountSummaries
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.toActiveAccountSummary
-import com.x8bit.bitwarden.ui.vault.feature.vault.util.toFilteredList
+import com.x8bit.bitwarden.data.vault.util.toFilteredList
 import com.x8bit.bitwarden.ui.vault.model.VaultItemCipherType
 import com.x8bit.bitwarden.ui.vault.util.toVaultItemCipherType
 import dagger.hilt.android.lifecycle.HiltViewModel

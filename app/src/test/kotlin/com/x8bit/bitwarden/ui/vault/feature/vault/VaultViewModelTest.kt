@@ -74,7 +74,7 @@ import com.x8bit.bitwarden.ui.platform.model.SnackbarRelay
 import com.x8bit.bitwarden.ui.vault.components.model.CreateVaultItemType
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflowAction
 import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterData
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.toSnackbarData
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.toViewState
 import com.x8bit.bitwarden.ui.vault.model.VaultItemCipherType

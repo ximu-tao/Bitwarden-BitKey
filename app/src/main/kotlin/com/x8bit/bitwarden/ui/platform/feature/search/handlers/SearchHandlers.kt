@@ -5,7 +5,7 @@ import com.x8bit.bitwarden.ui.platform.feature.search.SearchAction
 import com.x8bit.bitwarden.ui.platform.feature.search.SearchState
 import com.x8bit.bitwarden.ui.platform.feature.search.SearchViewModel
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflowAction
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 
 /**
  * A collection of handler functions for managing actions within the context of the search screen.

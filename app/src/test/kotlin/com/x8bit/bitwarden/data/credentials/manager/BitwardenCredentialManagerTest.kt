@@ -27,9 +27,9 @@ import com.bitwarden.sdk.Fido2CredentialStore
 import com.bitwarden.vault.CipherListViewType
 import com.bitwarden.vault.DecryptCipherListResult
 import com.x8bit.bitwarden.data.credentials.builder.CredentialEntryBuilder
-import com.x8bit.bitwarden.data.credentials.model.Fido2AttestationResponse
+import com.x8bit.bitwarden.data.vault.model.Fido2AttestationResponse
 import com.x8bit.bitwarden.data.credentials.model.Fido2CredentialAssertionResult
-import com.x8bit.bitwarden.data.credentials.model.Fido2PublicKeyCredential
+import com.x8bit.bitwarden.data.vault.model.Fido2PublicKeyCredential
 import com.x8bit.bitwarden.data.credentials.model.Fido2RegisterCredentialResult
 import com.x8bit.bitwarden.data.credentials.model.GetCredentialsRequest
 import com.x8bit.bitwarden.data.credentials.model.PasskeyAssertionOptions

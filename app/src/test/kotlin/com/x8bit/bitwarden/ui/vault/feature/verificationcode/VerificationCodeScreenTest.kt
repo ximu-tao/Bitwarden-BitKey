@@ -21,7 +21,7 @@ import com.bitwarden.ui.util.assertNoDialogExists
 import com.x8bit.bitwarden.data.platform.manager.util.AppResumeStateManager
 import com.x8bit.bitwarden.ui.platform.base.BitwardenComposeTest
 import com.x8bit.bitwarden.ui.vault.feature.item.VaultItemArgs
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import com.x8bit.bitwarden.ui.vault.model.VaultItemCipherType
 import io.mockk.every
 import io.mockk.mockk

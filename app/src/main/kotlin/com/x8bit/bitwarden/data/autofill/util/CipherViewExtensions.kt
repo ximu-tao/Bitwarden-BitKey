@@ -3,7 +3,6 @@ package com.x8bit.bitwarden.data.autofill.util
 import com.bitwarden.vault.CipherView
 import com.x8bit.bitwarden.data.autofill.model.AutofillCipher
 import com.x8bit.bitwarden.data.autofill.provider.AutofillCipherProvider
-import com.x8bit.bitwarden.data.platform.util.isActive
 import com.x8bit.bitwarden.data.platform.util.subtitle
 
 /**
@@ -47,17 +46,3 @@ fun CipherView.toAutofillCipherProvider(): AutofillCipherProvider =
             )
         }
     }
-
-/**
- * Returns true when the cipher is not archived, not deleted and contains at least one FIDO 2
- * credential.
- */
-val CipherView.isActiveWithFido2Credentials: Boolean
-    get() = isActive && !(login?.fido2Credentials.isNullOrEmpty())
-
-/**
- * Returns true when the cipher is not archived, not deleted and contains at least one Password
- * credential.
- */
-val CipherView.isActiveWithPasswordCredentials: Boolean
-    get() = isActive && !(login?.password.isNullOrEmpty())

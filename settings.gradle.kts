@@ -43,6 +43,7 @@ rootProject.name = "Bitwarden"
 include(
     ":annotation",
     ":app",
+    ":appdata",
     ":authenticator",
     ":authenticatorbridge",
     ":bitkey",
@@ -52,4 +53,5 @@ include(
     ":network",
     ":testharness",
     ":ui",
+    ":wear",
 )

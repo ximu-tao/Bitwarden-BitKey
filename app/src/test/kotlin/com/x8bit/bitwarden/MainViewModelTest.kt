@@ -22,7 +22,7 @@ import com.bitwarden.ui.platform.base.BaseViewModelTest
 import com.bitwarden.ui.platform.feature.settings.appearance.model.AppTheme
 import com.bitwarden.ui.platform.manager.share.ShareManager
 import com.bitwarden.ui.platform.manager.share.model.ShareData
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.vault.CipherView
 import com.x8bit.bitwarden.data.auth.datasource.disk.model.OnboardingStatus

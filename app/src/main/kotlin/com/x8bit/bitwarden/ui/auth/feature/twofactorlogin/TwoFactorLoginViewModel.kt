@@ -15,7 +15,7 @@ import com.bitwarden.network.util.twoFactorDisplayEmail
 import com.bitwarden.network.util.twoFactorDuoAuthUrl
 import com.bitwarden.ui.platform.base.BaseViewModel
 import com.bitwarden.ui.platform.components.snackbar.model.BitwardenSnackbarData
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.Text
 import com.bitwarden.ui.util.asText

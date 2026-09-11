@@ -3,6 +3,8 @@ package com.x8bit.bitwarden.data.autofill.util
 import com.bitwarden.vault.CipherType
 import com.x8bit.bitwarden.data.autofill.model.AutofillCipher
 import com.x8bit.bitwarden.data.vault.datasource.sdk.model.createMockCipherView
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.isActiveWithPasswordCredentials
 import com.x8bit.bitwarden.data.vault.datasource.sdk.model.createMockLoginView
 import com.x8bit.bitwarden.data.vault.datasource.sdk.model.createMockSdkFido2CredentialList
 import kotlinx.coroutines.test.runTest

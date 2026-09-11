@@ -12,7 +12,7 @@ import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.vault.CipherListView
 import com.x8bit.bitwarden.data.auth.repository.AuthRepository
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.login
 import com.x8bit.bitwarden.data.credentials.manager.CredentialManagerPendingIntentManager
 import com.x8bit.bitwarden.data.credentials.util.setBiometricPromptDataIfSupported
 

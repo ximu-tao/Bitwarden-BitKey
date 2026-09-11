@@ -4,7 +4,7 @@ import android.os.Parcelable
 import androidx.credentials.CredentialManager
 import com.bitwarden.cxf.model.ImportCredentialsRequestData
 import com.bitwarden.ui.platform.manager.share.model.ShareData
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.x8bit.bitwarden.data.autofill.model.AutofillSaveItem
 import com.x8bit.bitwarden.data.autofill.model.AutofillSelectionData
 import com.x8bit.bitwarden.data.billing.util.PremiumCheckoutCallbackResult

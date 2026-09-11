@@ -10,7 +10,7 @@ import com.bitwarden.data.repository.util.baseWebSendUrl
 import com.bitwarden.send.SendType
 import com.bitwarden.send.SendView
 import com.bitwarden.ui.platform.components.icon.model.IconData
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
@@ -34,7 +34,7 @@ import com.x8bit.bitwarden.data.vault.datasource.sdk.model.createMockSdkCipher
 import com.x8bit.bitwarden.data.vault.datasource.sdk.model.createMockSendView
 import com.x8bit.bitwarden.data.vault.repository.model.VaultData
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.VaultItemListingState
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject

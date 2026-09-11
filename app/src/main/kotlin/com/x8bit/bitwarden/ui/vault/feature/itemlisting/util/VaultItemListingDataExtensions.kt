@@ -9,7 +9,7 @@ import com.bitwarden.send.SendType
 import com.bitwarden.send.SendView
 import com.bitwarden.ui.platform.base.util.toHostOrPathOrNull
 import com.bitwarden.ui.platform.components.icon.model.IconData
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
@@ -19,8 +19,8 @@ import com.bitwarden.vault.CipherRepromptType
 import com.bitwarden.vault.CipherView
 import com.bitwarden.vault.FolderView
 import com.x8bit.bitwarden.data.autofill.model.AutofillSelectionData
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithFido2Credentials
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.login
 import com.x8bit.bitwarden.data.credentials.model.CreateCredentialRequest
 import com.x8bit.bitwarden.data.platform.util.isActive
 import com.x8bit.bitwarden.data.vault.repository.model.VaultData
@@ -34,9 +34,9 @@ import com.x8bit.bitwarden.ui.vault.feature.util.toCollectionDisplayName
 import com.x8bit.bitwarden.ui.vault.feature.util.toFolderDisplayName
 import com.x8bit.bitwarden.ui.vault.feature.util.toLabelIcons
 import com.x8bit.bitwarden.ui.vault.feature.util.toOverflowActions
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.applyRestrictItemTypesPolicy
-import com.x8bit.bitwarden.ui.vault.feature.vault.util.toFilteredList
+import com.x8bit.bitwarden.data.vault.util.toFilteredList
 import com.x8bit.bitwarden.ui.vault.feature.vault.util.toLoginIconData
 import com.x8bit.bitwarden.ui.vault.util.toSdkCipherType
 import java.time.Clock

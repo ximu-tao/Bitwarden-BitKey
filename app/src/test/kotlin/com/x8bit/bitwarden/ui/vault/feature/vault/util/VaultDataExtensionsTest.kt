@@ -30,7 +30,7 @@ import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflo
 import com.x8bit.bitwarden.ui.vault.feature.util.toLabelIcons
 import com.x8bit.bitwarden.ui.vault.feature.util.toOverflowActions
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultState
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic

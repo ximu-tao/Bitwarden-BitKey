@@ -19,7 +19,7 @@ import com.bitwarden.ui.platform.components.snackbar.model.BitwardenSnackbarData
 import com.bitwarden.ui.platform.feature.cardscanner.manager.CardScanManager
 import com.bitwarden.ui.platform.feature.cardscanner.util.CardScanResult
 import com.bitwarden.ui.platform.manager.snackbar.SnackbarRelayManager
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.resource.BitwardenPlurals
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.Text
@@ -33,7 +33,7 @@ import com.x8bit.bitwarden.data.auth.repository.model.BreachCountResult
 import com.x8bit.bitwarden.data.auth.repository.model.UserState
 import com.x8bit.bitwarden.data.auth.repository.model.ValidatePasswordResult
 import com.x8bit.bitwarden.data.auth.repository.model.ValidatePinResult
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
 import com.x8bit.bitwarden.data.billing.manager.PremiumStateManager
 import com.x8bit.bitwarden.data.credentials.manager.BitwardenCredentialManager
 import com.x8bit.bitwarden.data.credentials.model.CreateCredentialRequest

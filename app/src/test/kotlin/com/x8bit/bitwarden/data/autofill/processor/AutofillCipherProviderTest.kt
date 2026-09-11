@@ -16,8 +16,8 @@ import com.x8bit.bitwarden.data.auth.repository.AuthRepository
 import com.x8bit.bitwarden.data.autofill.model.AutofillCipher
 import com.x8bit.bitwarden.data.autofill.provider.AutofillCipherProvider
 import com.x8bit.bitwarden.data.autofill.provider.AutofillCipherProviderImpl
-import com.x8bit.bitwarden.data.autofill.util.card
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.card
+import com.x8bit.bitwarden.data.vault.util.login
 import com.x8bit.bitwarden.data.platform.manager.PolicyManager
 import com.x8bit.bitwarden.data.platform.manager.ciphermatching.CipherMatchingManager
 import com.x8bit.bitwarden.data.platform.util.subtitle

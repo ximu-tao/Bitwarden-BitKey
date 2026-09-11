@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import com.bitwarden.annotation.OmitFromCoverage
 import com.bitwarden.core.data.manager.BuildInfoManager
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.model.FileData
 import java.time.Clock
 

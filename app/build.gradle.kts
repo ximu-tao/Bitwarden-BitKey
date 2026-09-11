@@ -239,6 +239,7 @@ dependencies {
     implementation(project(":authenticatorbridge"))
 
     implementation(project(":annotation"))
+    implementation(project(":appdata"))
     implementation(project(":bitkey"))
     implementation(project(":core"))
     implementation(project(":cxf"))
@@ -305,6 +306,7 @@ dependencies {
     testImplementation(testFixtures(project(":data")))
     testImplementation(testFixtures(project(":network")))
     testImplementation(testFixtures(project(":ui")))
+    testImplementation(testFixtures(project(":appdata")))
 
     testImplementation(libs.androidx.compose.ui.test)
     testImplementation(libs.google.hilt.android.testing)

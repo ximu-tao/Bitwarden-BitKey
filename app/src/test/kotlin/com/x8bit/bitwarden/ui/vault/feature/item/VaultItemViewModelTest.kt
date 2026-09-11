@@ -1891,7 +1891,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
         }
 
         @Test
-        fun `on SendToBitKeyClick with blank address opens the device picker when a password exists`() =
+        fun `on SendFieldToBitKeyClick opens the device picker when a password exists`() =
             runTest {
                 every {
                     mockCipherView.toViewState(
@@ -1921,8 +1921,8 @@ class VaultItemViewModelTest : BaseViewModelTest() {
                         awaitItem(),
                     )
                     viewModel.trySendAction(
-                        VaultItemAction.ItemType.Login.SendToBitKeyClick(
-                            deviceAddress = "",
+                        VaultItemAction.Common.SendFieldToBitKeyClick(
+                            field = DEFAULT_LOGIN_PASSWORD,
                         ),
                     )
                     assertEquals(
@@ -1940,7 +1940,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
             }
 
         @Test
-        fun `on SendToBitKeyClick with blank address emits no-password snackbar when missing`() =
+        fun `on SendFieldToBitKeyClick with blank field emits no-password snackbar when missing`() =
             runTest {
                 val loginWithoutPassword = DEFAULT_LOGIN_TYPE.copy(
                     passwordData = VaultItemState.ViewState.Content.ItemType.Login.PasswordData(
@@ -1959,8 +1959,8 @@ class VaultItemViewModelTest : BaseViewModelTest() {
 
                 viewModel.eventFlow.test {
                     viewModel.trySendAction(
-                        VaultItemAction.ItemType.Login.SendToBitKeyClick(
-                            deviceAddress = "",
+                        VaultItemAction.Common.SendFieldToBitKeyClick(
+                            field = "",
                         ),
                     )
                     assertEquals(
@@ -1977,7 +1977,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
             }
 
         @Test
-        fun `on SendToBitKeyClick with valid address triggers send and emits success`() = runTest {
+        fun `on BitKeyDeviceSelected after SendFieldToBitKeyClick triggers send and emits success`() = runTest {
             val address = "AA:BB:CC:DD:EE:FF"
             coEvery {
                 mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
@@ -1985,7 +1985,12 @@ class VaultItemViewModelTest : BaseViewModelTest() {
 
             viewModel.eventFlow.test {
                 viewModel.trySendAction(
-                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                    VaultItemAction.Common.SendFieldToBitKeyClick(
+                        field = DEFAULT_LOGIN_PASSWORD,
+                    ),
+                )
+                viewModel.trySendAction(
+                    VaultItemAction.Common.BitKeyDeviceSelected(
                         deviceAddress = address,
                     ),
                 )
@@ -2003,7 +2008,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
         }
 
         @Test
-        fun `on SendToBitKeyClick maps a DeviceError to the failure snackbar`() = runTest {
+        fun `on BitKeyDeviceSelected after SendFieldToBitKeyClick maps a DeviceError to the failure snackbar`() = runTest {
             val address = "AA:BB:CC:DD:EE:FF"
             coEvery {
                 mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
@@ -2011,7 +2016,12 @@ class VaultItemViewModelTest : BaseViewModelTest() {
 
             viewModel.eventFlow.test {
                 viewModel.trySendAction(
-                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                    VaultItemAction.Common.SendFieldToBitKeyClick(
+                        field = DEFAULT_LOGIN_PASSWORD,
+                    ),
+                )
+                viewModel.trySendAction(
+                    VaultItemAction.Common.BitKeyDeviceSelected(
                         deviceAddress = address,
                     ),
                 )
@@ -2025,7 +2035,7 @@ class VaultItemViewModelTest : BaseViewModelTest() {
         }
 
         @Test
-        fun `on SendToBitKeyClick maps a TimedOut result to the timed-out snackbar`() = runTest {
+        fun `on BitKeyDeviceSelected after SendFieldToBitKeyClick maps a TimedOut result to the timed-out snackbar`() = runTest {
             val address = "AA:BB:CC:DD:EE:FF"
             coEvery {
                 mockBitKeySendService.sendPassword(address, DEFAULT_LOGIN_PASSWORD)
@@ -2033,7 +2043,12 @@ class VaultItemViewModelTest : BaseViewModelTest() {
 
             viewModel.eventFlow.test {
                 viewModel.trySendAction(
-                    VaultItemAction.ItemType.Login.SendToBitKeyClick(
+                    VaultItemAction.Common.SendFieldToBitKeyClick(
+                        field = DEFAULT_LOGIN_PASSWORD,
+                    ),
+                )
+                viewModel.trySendAction(
+                    VaultItemAction.Common.BitKeyDeviceSelected(
                         deviceAddress = address,
                     ),
                 )
@@ -2061,7 +2076,12 @@ class VaultItemViewModelTest : BaseViewModelTest() {
 
             viewModel.eventFlow.test {
                 viewModel.trySendAction(
-                    VaultItemAction.ItemType.Login.BitKeyDeviceSelected(
+                    VaultItemAction.Common.SendFieldToBitKeyClick(
+                        field = DEFAULT_LOGIN_PASSWORD,
+                    ),
+                )
+                viewModel.trySendAction(
+                    VaultItemAction.Common.BitKeyDeviceSelected(
                         deviceAddress = address,
                     ),
                 )

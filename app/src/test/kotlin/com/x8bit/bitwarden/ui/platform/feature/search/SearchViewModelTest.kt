@@ -74,8 +74,8 @@ import com.x8bit.bitwarden.ui.platform.feature.search.util.toViewState
 import com.x8bit.bitwarden.ui.platform.model.SnackbarRelay
 import com.x8bit.bitwarden.ui.tools.feature.send.model.SendItemType
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflowAction
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
-import com.x8bit.bitwarden.ui.vault.feature.vault.util.toFilteredList
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.util.toFilteredList
 import com.x8bit.bitwarden.ui.vault.model.VaultItemCipherType
 import io.mockk.awaits
 import io.mockk.coEvery

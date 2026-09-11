@@ -32,7 +32,9 @@ import com.bitwarden.ui.platform.components.dialog.row.BitwardenSelectionRow
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.platform.theme.BitwardenTheme
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
+import com.x8bit.bitwarden.ui.vault.feature.vault.model.description
+import com.x8bit.bitwarden.ui.vault.feature.vault.model.name
 import kotlinx.collections.immutable.ImmutableList
 
 /**

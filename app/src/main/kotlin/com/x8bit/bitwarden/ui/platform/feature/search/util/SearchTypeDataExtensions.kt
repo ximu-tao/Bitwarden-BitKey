@@ -18,8 +18,8 @@ import com.bitwarden.vault.CipherListViewType
 import com.bitwarden.vault.CipherRepromptType
 import com.bitwarden.vault.CipherView
 import com.bitwarden.vault.FolderView
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithFido2Credentials
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.login
 import com.x8bit.bitwarden.data.platform.util.isActive
 import com.x8bit.bitwarden.ui.platform.feature.search.SearchState
 import com.x8bit.bitwarden.ui.platform.feature.search.SearchTypeData

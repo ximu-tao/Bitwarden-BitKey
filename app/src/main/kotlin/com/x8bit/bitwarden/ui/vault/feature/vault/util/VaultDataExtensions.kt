@@ -12,8 +12,9 @@ import com.bitwarden.vault.CipherRepromptType
 import com.bitwarden.vault.CipherType
 import com.bitwarden.vault.FolderView
 import com.bitwarden.vault.LoginUriView
-import com.x8bit.bitwarden.data.autofill.util.card
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.card
+import com.x8bit.bitwarden.data.vault.util.login
+import com.x8bit.bitwarden.data.vault.util.toFilteredList
 import com.x8bit.bitwarden.data.platform.util.isActive
 import com.x8bit.bitwarden.data.vault.repository.model.VaultData
 import com.x8bit.bitwarden.data.vault.repository.util.toFailureCipherListView
@@ -22,7 +23,7 @@ import com.x8bit.bitwarden.ui.vault.feature.util.getFilteredFolders
 import com.x8bit.bitwarden.ui.vault.feature.util.toLabelIcons
 import com.x8bit.bitwarden.ui.vault.feature.util.toOverflowActions
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultState
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import com.x8bit.bitwarden.ui.vault.model.findVaultCardBrandWithNameOrNull
 import kotlinx.collections.immutable.persistentListOf
 
@@ -418,66 +419,6 @@ private fun CipherListView.toVaultItemOrNull(
         )
     }
 }
-
-/**
- * Filters out all [CipherListView]s that are not part of the given [VaultFilterType].
- */
-@JvmName("toFilteredCipherList")
-fun List<CipherListView>.toFilteredList(
-    vaultFilterType: VaultFilterType,
-): List<CipherListView> =
-    this
-        // Filter out any items with invalid IDs in the unlikely case they exist
-        .filterNot { it.id.isNullOrBlank() }
-        .filter {
-            when (vaultFilterType) {
-                VaultFilterType.AllVaults -> true
-                VaultFilterType.MyVault -> it.organizationId == null
-                is VaultFilterType.OrganizationVault -> {
-                    it.organizationId == vaultFilterType.organizationId
-                }
-            }
-        }
-
-/**
- * Filters out all [FolderView]s that are not part of the given [VaultFilterType].
- */
-@JvmName("toFilteredFolderList")
-fun List<FolderView>.toFilteredList(
-    cipherList: List<CipherListView>,
-    vaultFilterType: VaultFilterType,
-): List<FolderView> =
-    this
-        .filter { folder ->
-            when (vaultFilterType) {
-                VaultFilterType.AllVaults,
-                VaultFilterType.MyVault,
-                    -> true
-
-                // Only include folders containing an item associated with this organization.
-                is VaultFilterType.OrganizationVault -> {
-                    cipherList.any { it.folderId == folder.id }
-                }
-            }
-        }
-
-/**
- * Filters out all [CollectionView]s that are not part of the given [VaultFilterType].
- */
-@JvmName("toFilteredCollectionList")
-fun List<CollectionView>.toFilteredList(
-    vaultFilterType: VaultFilterType,
-): List<CollectionView> =
-    this
-        .filter {
-            when (vaultFilterType) {
-                VaultFilterType.AllVaults -> true
-                VaultFilterType.MyVault -> false
-                is VaultFilterType.OrganizationVault -> {
-                    it.organizationId == vaultFilterType.organizationId
-                }
-            }
-        }
 
 /**
  * Filters out [CipherType.CARD] [CipherListView]s that are in [restrictItemTypesPolicyOrgIds] list.

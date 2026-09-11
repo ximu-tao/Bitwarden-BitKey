@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.bitwarden.core.data.util.toFormattedDateStyle
 import com.bitwarden.data.repository.util.baseWebVaultUrlOrDefault
 import com.bitwarden.ui.platform.base.BaseViewModel
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.resource.BitwardenDrawable
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.Text

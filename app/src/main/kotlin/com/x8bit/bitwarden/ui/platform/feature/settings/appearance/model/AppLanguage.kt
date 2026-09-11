@@ -6,173 +6,56 @@ import com.bitwarden.ui.util.asText
 
 /**
  * Represents the languages supported by the app.
+ *
+ * Backed by the shared data layer model in `:appdata`; display labels are provided via the
+ * [text] extension below.
  */
-enum class AppLanguage(
-    val localeName: String?,
-    val text: Text,
-) {
-    DEFAULT(
-        localeName = null,
-        text = BitwardenString.default_system.asText(),
-    ),
-    AFRIKAANS(
-        localeName = "af",
-        text = "Afrikaans".asText(),
-    ),
-    BELARUSIAN(
-        localeName = "be",
-        text = "Беларуская".asText(),
-    ),
-    BULGARIAN(
-        localeName = "bg",
-        text = "български".asText(),
-    ),
-    CATALAN(
-        localeName = "ca",
-        text = "català".asText(),
-    ),
-    CZECH(
-        localeName = "cs",
-        text = "čeština".asText(),
-    ),
-    DANISH(
-        localeName = "da",
-        text = "Dansk".asText(),
-    ),
-    GERMAN(
-        localeName = "de",
-        text = "Deutsch".asText(),
-    ),
-    GREEK(
-        localeName = "el",
-        text = "Ελληνικά".asText(),
-    ),
-    ENGLISH(
-        localeName = "en",
-        text = "English".asText(),
-    ),
-    ENGLISH_BRITISH(
-        localeName = "en-GB",
-        text = "English (United Kingdom)".asText(),
-    ),
-    SPANISH(
-        localeName = "es",
-        text = "Español".asText(),
-    ),
-    ESTONIAN(
-        localeName = "et",
-        text = "eesti".asText(),
-    ),
-    PERSIAN(
-        localeName = "fa",
-        text = "فارسی".asText(),
-    ),
-    FINNISH(
-        localeName = "fi",
-        text = "suomi".asText(),
-    ),
-    FRENCH(
-        localeName = "fr",
-        text = "Français".asText(),
-    ),
-    HINDI(
-        localeName = "hi",
-        text = "हिन्दी".asText(),
-    ),
-    CROATIAN(
-        localeName = "hr",
-        text = "hrvatski".asText(),
-    ),
-    HUNGARIAN(
-        localeName = "hu",
-        text = "magyar".asText(),
-    ),
-    INDONESIAN(
-        localeName = "in",
-        text = "Bahasa Indonesia".asText(),
-    ),
-    ITALIAN(
-        localeName = "it",
-        text = "Italiano".asText(),
-    ),
-    HEBREW(
-        localeName = "iw",
-        text = "עברית".asText(),
-    ),
-    JAPANESE(
-        localeName = "ja",
-        text = "日本語".asText(),
-    ),
-    KOREAN(
-        localeName = "ko",
-        text = "한국어".asText(),
-    ),
-    LATVIAN(
-        localeName = "lv",
-        text = "Latvietis".asText(),
-    ),
-    MALAYALAM(
-        localeName = "ml",
-        text = "മലയാളം".asText(),
-    ),
-    NORWEGIAN(
-        localeName = "nb",
-        text = "norsk (bokmål)".asText(),
-    ),
-    DUTCH(
-        localeName = "nl",
-        text = "Nederlands".asText(),
-    ),
-    POLISH(
-        localeName = "pl",
-        text = "Polski".asText(),
-    ),
-    PORTUGUESE_BRAZILIAN(
-        localeName = "pt-BR",
-        text = "Português do Brasil".asText(),
-    ),
-    PORTUGUESE(
-        localeName = "pt-PT",
-        text = "Português".asText(),
-    ),
-    ROMANIAN(
-        localeName = "ro",
-        text = "română".asText(),
-    ),
-    RUSSIAN(
-        localeName = "ru",
-        text = "русский".asText(),
-    ),
-    SLOVAK(
-        localeName = "sk",
-        text = "slovenčina".asText(),
-    ),
-    SWEDISH(
-        localeName = "sv",
-        text = "svenska".asText(),
-    ),
-    THAI(
-        localeName = "th",
-        text = "ไทย".asText(),
-    ),
-    TURKISH(
-        localeName = "tr",
-        text = "Türkçe".asText(),
-    ),
-    UKRAINIAN(
-        localeName = "uk",
-        text = "українська".asText(),
-    ),
-    VIETNAMESE(
-        localeName = "vi",
-        text = "Tiếng Việt".asText(),
-    ),
-    CHINESE_SIMPLIFIED(
-        localeName = "zh-CN",
-        text = "中文（中国大陆）".asText(),
-    ),
-    CHINESE_TRADITIONAL(
-        localeName = "zh-TW",
-        text = "中文（台灣）".asText(),
-    ),
-}
+typealias AppLanguage = com.x8bit.bitwarden.data.platform.model.AppLanguage
+
+/**
+ * Returns a human-readable display label for the given [AppLanguage].
+ */
+val AppLanguage.text: Text
+    get() = when (this) {
+        AppLanguage.DEFAULT -> BitwardenString.default_system.asText()
+        AppLanguage.AFRIKAANS -> "Afrikaans".asText()
+        AppLanguage.BELARUSIAN -> "Беларуская".asText()
+        AppLanguage.BULGARIAN -> "български".asText()
+        AppLanguage.CATALAN -> "català".asText()
+        AppLanguage.CZECH -> "čeština".asText()
+        AppLanguage.DANISH -> "Dansk".asText()
+        AppLanguage.GERMAN -> "Deutsch".asText()
+        AppLanguage.GREEK -> "Ελληνικά".asText()
+        AppLanguage.ENGLISH -> "English".asText()
+        AppLanguage.ENGLISH_BRITISH -> "English (United Kingdom)".asText()
+        AppLanguage.SPANISH -> "Español".asText()
+        AppLanguage.ESTONIAN -> "eesti".asText()
+        AppLanguage.PERSIAN -> "فارسی".asText()
+        AppLanguage.FINNISH -> "suomi".asText()
+        AppLanguage.FRENCH -> "Français".asText()
+        AppLanguage.HINDI -> "हिन्दी".asText()
+        AppLanguage.CROATIAN -> "hrvatski".asText()
+        AppLanguage.HUNGARIAN -> "magyar".asText()
+        AppLanguage.INDONESIAN -> "Bahasa Indonesia".asText()
+        AppLanguage.ITALIAN -> "Italiano".asText()
+        AppLanguage.HEBREW -> "עברית".asText()
+        AppLanguage.JAPANESE -> "日本語".asText()
+        AppLanguage.KOREAN -> "한국어".asText()
+        AppLanguage.LATVIAN -> "Latvietis".asText()
+        AppLanguage.MALAYALAM -> "മലയാളം".asText()
+        AppLanguage.NORWEGIAN -> "norsk (bokmål)".asText()
+        AppLanguage.DUTCH -> "Nederlands".asText()
+        AppLanguage.POLISH -> "Polski".asText()
+        AppLanguage.PORTUGUESE_BRAZILIAN -> "Português do Brasil".asText()
+        AppLanguage.PORTUGUESE -> "Português".asText()
+        AppLanguage.ROMANIAN -> "română".asText()
+        AppLanguage.RUSSIAN -> "русский".asText()
+        AppLanguage.SLOVAK -> "slovenčina".asText()
+        AppLanguage.SWEDISH -> "svenska".asText()
+        AppLanguage.THAI -> "ไทย".asText()
+        AppLanguage.TURKISH -> "Türkçe".asText()
+        AppLanguage.UKRAINIAN -> "українська".asText()
+        AppLanguage.VIETNAMESE -> "Tiếng Việt".asText()
+        AppLanguage.CHINESE_SIMPLIFIED -> "中文（中国大陆）".asText()
+        AppLanguage.CHINESE_TRADITIONAL -> "中文（台灣）".asText()
+    }

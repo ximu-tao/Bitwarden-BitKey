@@ -4,6 +4,7 @@ import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.Text
 import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.data.platform.repository.model.UriMatchType
+import com.x8bit.bitwarden.data.platform.util.toSdkUriMatchType as toDataSdkUriMatchType
 
 /**
  * Returns a human-readable display label for the given [UriMatchType].
@@ -23,14 +24,7 @@ val UriMatchType.displayLabel: Text
  * Convert this internal [UriMatchType] to the sdk model.
  */
 fun UriMatchType.toSdkUriMatchType(): com.bitwarden.vault.UriMatchType =
-    when (this) {
-        UriMatchType.DOMAIN -> com.bitwarden.vault.UriMatchType.DOMAIN
-        UriMatchType.EXACT -> com.bitwarden.vault.UriMatchType.EXACT
-        UriMatchType.HOST -> com.bitwarden.vault.UriMatchType.HOST
-        UriMatchType.NEVER -> com.bitwarden.vault.UriMatchType.NEVER
-        UriMatchType.REGULAR_EXPRESSION -> com.bitwarden.vault.UriMatchType.REGULAR_EXPRESSION
-        UriMatchType.STARTS_WITH -> com.bitwarden.vault.UriMatchType.STARTS_WITH
-    }
+    this.toDataSdkUriMatchType()
 
 /**
  * Checks if the [UriMatchType] is considered an advanced matching strategy.

@@ -6,7 +6,7 @@ import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflo
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultAction
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultState
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultViewModel
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 
 /**
  * A collection of handler functions for managing actions within the context of the vault screen.

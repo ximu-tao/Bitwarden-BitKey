@@ -11,7 +11,7 @@ import com.bitwarden.network.model.GetTokenResponseJson
 import com.bitwarden.network.model.TwoFactorAuthMethod
 import com.bitwarden.network.model.TwoFactorDataModel
 import com.bitwarden.ui.platform.base.BaseViewModelTest
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.data.auth.repository.AuthRepository

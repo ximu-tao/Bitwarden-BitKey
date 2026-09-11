@@ -25,6 +25,8 @@ Thumbs.db
 .idea/
 *.iml
 /build
+/appdata/build/
+/wear/build/
 /captures
 /local.properties
 local.properties

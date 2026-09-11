@@ -3,7 +3,7 @@ package com.x8bit.bitwarden.ui.vault.feature.vault.util
 import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.ui.vault.feature.vault.VaultState
 import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterData
-import com.x8bit.bitwarden.ui.vault.feature.vault.model.VaultFilterType
+import com.x8bit.bitwarden.data.vault.model.VaultFilterType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

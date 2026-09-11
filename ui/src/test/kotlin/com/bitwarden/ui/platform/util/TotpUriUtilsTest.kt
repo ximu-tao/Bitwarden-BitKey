@@ -1,7 +1,7 @@
 package com.bitwarden.ui.platform.util
 
 import android.net.Uri
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

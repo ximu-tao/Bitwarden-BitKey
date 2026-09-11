@@ -55,6 +55,7 @@ configure<LibraryExtension> {
 
 dependencies {
     implementation(project(":annotation"))
+    api(project(":appdata"))
     implementation(project(":core"))
 
     implementation(libs.androidx.appcompat)

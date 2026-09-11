@@ -297,7 +297,8 @@ class StartRegistrationViewModel @Inject constructor(
             is SendVerificationEmailResult.Success -> {
                 environmentRepository.saveCurrentEnvironmentForEmail(state.emailInput)
                 mutableStateFlow.update { it.copy(dialog = null) }
-                if (sendVerificationEmailResult.emailVerificationToken == null) {
+                val verificationToken = sendVerificationEmailResult.emailVerificationToken
+                if (verificationToken == null) {
                     sendEvent(
                         StartRegistrationEvent.NavigateToCheckEmail(
                             email = state.emailInput,
@@ -307,7 +308,7 @@ class StartRegistrationViewModel @Inject constructor(
                     sendEvent(
                         StartRegistrationEvent.NavigateToCompleteRegistration(
                             email = state.emailInput,
-                            verificationToken = sendVerificationEmailResult.emailVerificationToken,
+                            verificationToken = verificationToken,
                         ),
                     )
                 }

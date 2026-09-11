@@ -17,9 +17,9 @@ import com.bitwarden.vault.CipherListView
 import com.bitwarden.vault.CipherListViewType
 import com.bitwarden.vault.DecryptCipherListResult
 import com.x8bit.bitwarden.data.auth.repository.AuthRepository
-import com.x8bit.bitwarden.data.autofill.util.card
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithCopyablePassword
-import com.x8bit.bitwarden.data.autofill.util.isActiveWithFido2Credentials
+import com.x8bit.bitwarden.data.vault.util.card
+import com.x8bit.bitwarden.data.vault.util.isActiveWithCopyablePassword
+import com.x8bit.bitwarden.data.vault.util.isActiveWithFido2Credentials
 import com.x8bit.bitwarden.data.platform.manager.PolicyManager
 import com.x8bit.bitwarden.data.platform.manager.SpecialCircumstanceManager
 import com.x8bit.bitwarden.data.platform.manager.util.toImportCredentialsRequestDataOrNull

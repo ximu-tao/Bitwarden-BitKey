@@ -19,7 +19,7 @@ import com.bitwarden.core.data.repository.util.bufferedMutableSharedFlow
 import com.bitwarden.network.model.TwoFactorAuthMethod
 import com.bitwarden.ui.platform.components.snackbar.model.BitwardenSnackbarData
 import com.bitwarden.ui.platform.manager.IntentManager
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.util.asText
 import com.x8bit.bitwarden.ui.platform.base.BitwardenComposeTest
 import com.x8bit.bitwarden.ui.platform.manager.nfc.NfcManager

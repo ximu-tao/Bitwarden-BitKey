@@ -5,7 +5,7 @@ import com.bitwarden.vault.CipherListView
 import com.bitwarden.vault.CipherListViewType
 import com.bitwarden.vault.CipherView
 import com.bitwarden.vault.CopyableCipherFields
-import com.x8bit.bitwarden.data.autofill.util.login
+import com.x8bit.bitwarden.data.vault.util.login
 import com.x8bit.bitwarden.data.platform.util.isActive
 import com.x8bit.bitwarden.ui.vault.feature.itemlisting.model.ListingItemOverflowAction
 import com.x8bit.bitwarden.ui.vault.model.VaultTrailingIcon

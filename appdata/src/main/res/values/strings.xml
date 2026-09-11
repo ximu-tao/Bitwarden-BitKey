@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Used by NetworkCookieManagerImpl when a request is interrupted by re-authentication. -->
+    <string name="your_request_was_interrupted_because_the_app_needed_to_reauthenticate">Your request was interrupted because the app needed to re-authenticate. Please try again.</string>
+
+    <!-- Used by AuthRequestNotificationManagerImpl for login request notifications. -->
+    <string name="pending_log_in_requests">Pending login requests</string>
+    <string name="log_in_requested">Login requested</string>
+    <string name="confim_log_in_attemp_for_x">Confirm login attempt for %1$s</string>
+    <string name="confirm_log_in">Confirm login</string>
+
+    <!-- Used by UserLogoutManagerImpl for logout toasts. -->
+    <string name="login_expired">Your login session has expired.</string>
+    <string name="account_switched_automatically">Switched to next available account</string>
+
+    <!-- Used by AuthRepositoryImpl for the master password update toast. -->
+    <string name="updated_master_password">Updated master password</string>
+</resources>

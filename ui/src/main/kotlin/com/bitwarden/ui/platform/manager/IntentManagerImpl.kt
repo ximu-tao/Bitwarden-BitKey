@@ -29,7 +29,7 @@ import com.bitwarden.core.data.util.toFormattedPattern
 import com.bitwarden.core.data.manager.util.deviceData
 import com.bitwarden.core.data.manager.util.fileProviderAuthority
 import com.bitwarden.core.util.isBuildVersionAtLeast
-import com.bitwarden.ui.platform.manager.intent.model.AuthTabData
+import com.x8bit.bitwarden.data.platform.model.AuthTabData
 import com.bitwarden.ui.platform.model.FileData
 import com.bitwarden.ui.platform.resource.BitwardenString
 import com.bitwarden.ui.platform.util.getLocalFileData

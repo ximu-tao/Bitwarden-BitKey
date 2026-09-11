@@ -1,7 +1,7 @@
 package com.x8bit.bitwarden.ui.vault.util
 
 import android.content.Intent
-import com.bitwarden.ui.platform.model.TotpData
+import com.x8bit.bitwarden.data.platform.model.TotpData
 import com.bitwarden.ui.platform.util.getTotpDataOrNull
 
 /**
