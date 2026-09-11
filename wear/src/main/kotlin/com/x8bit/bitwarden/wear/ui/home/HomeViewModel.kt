@@ -54,6 +54,7 @@ class HomeViewModel @Inject constructor(
         CARD(label = "卡片", matchesType = { it is CipherListViewType.Card }),
         IDENTITY(label = "身份", matchesType = { it is CipherListViewType.Identity }),
         SECURE_NOTE(label = "笔记", matchesType = { it is CipherListViewType.SecureNote }),
+        FAVORITES(label = "收藏", matchesType = { true }),
     }
 
     /**
@@ -80,11 +81,18 @@ class HomeViewModel @Inject constructor(
      * The vault-browsing cipher list filtered by the currently selected type.
      */
     val filteredCiphers: List<CipherListView>
-        get() = uiState.ciphers
-            .filter { cipherView ->
-                uiState.selectedFilter.matchesType(cipherView.type)
+        get() {
+            // Favorites is the one filter that needs the list item itself, not
+            // just its type; all other filters match on [CipherListViewType].
+            val base = if (uiState.selectedFilter == VaultFilter.FAVORITES) {
+                uiState.ciphers.filter { cipherView -> cipherView.favorite }
+            } else {
+                uiState.ciphers.filter { cipherView ->
+                    uiState.selectedFilter.matchesType(cipherView.type)
+                }
             }
-            .sortedBy { it.name.orEmpty().lowercase() }
+            return base.sortedBy { it.name.orEmpty().lowercase() }
+        }
 
     /**
      * Selects the vault list filter.
