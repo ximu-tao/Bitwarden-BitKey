@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -94,9 +96,11 @@ fun HomeScreen(
         }
         when (selectedTab) {
             0 -> VaultTabContent(
-                filteredCiphers = viewModel.filteredCiphers,
+                groupedCiphers = viewModel.groupedCiphers,
                 selectedFilter = uiState.selectedFilter,
                 isLoading = uiState.isLoading,
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChange = viewModel::onSearchQueryChange,
                 onFilterSelect = viewModel::onFilterSelect,
                 onCipherClick = viewModel::onCipherClick,
             )
@@ -119,15 +123,23 @@ fun HomeScreen(
 }
 
 /**
- * Vault browsing tab: type filter chips + cipher list.
+ * Vault browsing tab: search field, type filter chips + folder-grouped list.
  */
 private fun ScalingLazyListScope.VaultTabContent(
-    filteredCiphers: List<com.bitwarden.vault.CipherListView>,
+    groupedCiphers: List<HomeViewModel.CipherGroup>,
     selectedFilter: VaultFilter,
     isLoading: Boolean,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onFilterSelect: (VaultFilter) -> Unit,
     onCipherClick: (String) -> Unit,
 ) {
+    item {
+        SearchField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+        )
+    }
     item {
         LazyRow(
             modifier = Modifier
@@ -145,7 +157,7 @@ private fun ScalingLazyListScope.VaultTabContent(
             }
         }
     }
-    if (filteredCiphers.isEmpty()) {
+    if (groupedCiphers.all { it.ciphers.isEmpty() }) {
         item {
             SectionPlaceholder(
                 title = "暂无条目",
@@ -153,14 +165,68 @@ private fun ScalingLazyListScope.VaultTabContent(
             )
         }
     } else {
-        items(filteredCiphers) { cipher ->
-            CipherListItem(
-                name = cipher.name.orEmpty(),
-                subtitle = cipher.subtitle?.takeIf { it.isNotBlank() }
-                    ?: cipherTypeName(cipher.type),
-                onClick = { onCipherClick(cipher.id.orEmpty()) },
-            )
+        groupedCiphers.forEach { group ->
+            group.folderName?.let { folderName ->
+                item {
+                    Text(
+                        text = folderName,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 8.dp, bottom = 2.dp),
+                    )
+                }
+            }
+            items(group.ciphers) { cipher ->
+                CipherListItem(
+                    name = cipher.name.orEmpty(),
+                    subtitle = cipher.subtitle?.takeIf { it.isNotBlank() }
+                        ?: cipherTypeName(cipher.type),
+                    onClick = { onCipherClick(cipher.id.orEmpty()) },
+                )
+            }
         }
+    }
+}
+
+/**
+ * Watch-sized search field for the vault list. Uses the foundational
+ * [BasicTextField] because Wear Material3 has no text input component yet;
+ * the card keeps the input tappable on round screens.
+ */
+@Composable
+private fun SearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            decorationBox = { innerTextField ->
+                if (value.isEmpty()) {
+                    Text(
+                        text = "搜索…",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                innerTextField()
+            },
+        )
     }
 }
 

@@ -64,9 +64,19 @@ class HomeViewModel @Inject constructor(
         val accountEmail: String = "",
         val ciphers: List<CipherListView> = emptyList(),
         val authCodes: List<VerificationCodeItem> = emptyList(),
+        val folderNames: Map<String, String> = emptyMap(),
         val isLoading: Boolean = true,
         val selectedFilter: VaultFilter = VaultFilter.ALL,
+        val searchQuery: String = "",
         val syncErrorMessage: String? = null,
+    )
+
+    /**
+     * A cipher list chunk grouped by its folder, ready for section rendering.
+     */
+    data class CipherGroup(
+        val folderName: String?,
+        val ciphers: List<CipherListView>,
     )
 
     init {
@@ -91,14 +101,49 @@ class HomeViewModel @Inject constructor(
                     uiState.selectedFilter.matchesType(cipherView.type)
                 }
             }
-            return base.sortedBy { it.name.orEmpty().lowercase() }
+            // Text search narrows the result further (name or subtitle).
+            val query = uiState.searchQuery.trim().lowercase()
+            return base
+                .filter { cipherView ->
+                    query.isEmpty() ||
+                        cipherView.name.orEmpty().lowercase().contains(query) ||
+                        cipherView.subtitle.orEmpty().lowercase().contains(query)
+                }
+                .sortedBy { it.name.orEmpty().lowercase() }
         }
+
+    /**
+     * The filtered ciphers split into folder sections, each with its folder
+     * name for rendering. Unknown/empty folder ids fall into the last group.
+     */
+    val groupedCiphers: List<CipherGroup>
+        get() = filteredCiphers
+            .groupBy { cipherView ->
+                cipherView.folderId?.takeIf { id ->
+                    uiState.folderNames.containsKey(id)
+                }
+            }
+            .entries
+            .sortedBy { entry -> entry.key != null }
+            .map { (folderId, ciphers) ->
+                CipherGroup(
+                    folderName = folderId?.let { uiState.folderNames[it] },
+                    ciphers = ciphers,
+                )
+            }
 
     /**
      * Selects the vault list filter.
      */
     fun onFilterSelect(filter: VaultFilter) {
         uiState = uiState.copy(selectedFilter = filter)
+    }
+
+    /**
+     * Updates the vault list search query.
+     */
+    fun onSearchQueryChange(query: String) {
+        uiState = uiState.copy(searchQuery = query)
     }
 
     /**
@@ -127,6 +172,9 @@ class HomeViewModel @Inject constructor(
                 dataState.data?.let { vaultData ->
                     uiState = uiState.copy(
                         ciphers = vaultData.decryptCipherListResult.successes,
+                        folderNames = vaultData.folderViewList.mapNotNull { folder ->
+                            folder.id?.let { it to folder.name }
+                        }.toMap(),
                         isLoading = false,
                     )
                 }
