@@ -9,6 +9,7 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.x8bit.bitwarden.wear.ui.bitkey.BitKeyPickerScreen
 import com.x8bit.bitwarden.wear.ui.detail.ItemDetailScreen
+import com.x8bit.bitwarden.wear.ui.feature.EnvironmentScreen
 import com.x8bit.bitwarden.wear.ui.feature.HomeScreen
 import com.x8bit.bitwarden.wear.ui.feature.LoginScreen
 import com.x8bit.bitwarden.wear.ui.feature.UnlockScreen
@@ -20,6 +21,12 @@ sealed class WearRoute(val route: String) {
     data object Login : WearRoute(route = "login")
     data object Unlock : WearRoute(route = "unlock")
     data object Home : WearRoute(route = "home")
+
+    /**
+     * Server environment selection (official cloud vs. self-hosted URL),
+     * reached from the login screen.
+     */
+    data object Environment : WearRoute(route = "environment")
 
     /**
      * BitKey device picker, reached from the cipher detail screen to send a
@@ -63,6 +70,12 @@ fun WearNavHost(
                         popUpTo(WearRoute.Login.route) { inclusive = true }
                     }
                 },
+                onOpenEnvironment = { navController.navigate(WearRoute.Environment.route) },
+            )
+        }
+        composable(WearRoute.Environment.route) {
+            EnvironmentScreen(
+                onDone = { navController.popBackStack() },
             )
         }
         composable(WearRoute.Unlock.route) {

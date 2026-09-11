@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.bitwarden.network.model.TwoFactorDataModel
 import com.x8bit.bitwarden.data.auth.repository.AuthRepository
 import com.x8bit.bitwarden.data.auth.repository.model.LoginResult
+import com.x8bit.bitwarden.data.platform.repository.EnvironmentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,10 +23,15 @@ import javax.inject.Inject
  * (pre-login KDF, identity API calls, token storage) is shared verbatim.
  * The wear UI only drives the flow: email + master password first, then an
  * inline two-factor code step when the server requires it.
+ *
+ * The currently configured server environment (e.g. `bitwarden.com`, a
+ * self-hosted URL) is surfaced so the user can switch servers before logging
+ * in; the switch itself happens on a dedicated environment screen.
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val environmentRepository: EnvironmentRepository,
 ) : ViewModel() {
 
     /**
@@ -33,6 +39,20 @@ class LoginViewModel @Inject constructor(
      */
     var uiState by mutableStateOf(LoginUiState())
         private set
+
+    init {
+        // Keep the shown environment label in sync with the repository so it
+        // reflects changes made on the environment screen without relaunching.
+        // Note: this block must come after `uiState` is initialized because
+        // StateFlow.collect emits the current value synchronously on
+        // Dispatchers.Main.immediate, which would otherwise read the unset
+        // property delegate and crash.
+        viewModelScope.launch {
+            environmentRepository.environmentStateFlow.collect { environment ->
+                uiState = uiState.copy(environmentLabel = environment.label)
+            }
+        }
+    }
 
     /**
      * Emits a single event when login completes successfully.
@@ -50,6 +70,7 @@ class LoginViewModel @Inject constructor(
         val errorMessage: String? = null,
         val requiresTwoFactor: Boolean = false,
         val twoFactorCode: String = "",
+        val environmentLabel: String = "",
     )
 
     /**

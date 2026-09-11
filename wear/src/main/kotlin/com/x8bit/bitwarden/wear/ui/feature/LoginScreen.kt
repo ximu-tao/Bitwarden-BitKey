@@ -17,6 +17,7 @@ import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
+import androidx.wear.compose.material3.TextButton
 import com.x8bit.bitwarden.wear.ui.auth.LoginViewModel
 
 /**
@@ -30,6 +31,7 @@ import com.x8bit.bitwarden.wear.ui.auth.LoginViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onOpenEnvironment: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState
@@ -106,6 +108,20 @@ fun LoginScreen(
                     isLoading = uiState.isLoading,
                     enabled = uiState.email.isNotBlank() && uiState.password.isNotBlank(),
                     onClick = viewModel::login,
+                )
+            }
+        }
+        item {
+            TextButton(
+                onClick = onOpenEnvironment,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "服务器：${uiState.environmentLabel}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
