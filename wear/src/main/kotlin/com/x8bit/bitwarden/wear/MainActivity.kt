@@ -4,65 +4,51 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.wear.compose.material3.MaterialTheme
-import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.material3.Text
-import com.x8bit.bitwarden.wear.ui.SdkStatusViewModel
+import androidx.lifecycle.ViewModel
+import com.x8bit.bitwarden.data.auth.manager.UserStateManager
+import com.x8bit.bitwarden.wear.ui.navigation.WearNavHost
+import com.x8bit.bitwarden.wear.ui.navigation.WearRoute
 import com.x8bit.bitwarden.wear.ui.theme.BitwardenWearTheme
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 /**
  * Entry point for the Wear OS app.
+ *
+ * Decides the initial route based on whether an account is already present on
+ * the device: returning users go straight to the unlock screen, new users to
+ * the login screen.
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val sdkStatusViewModel: SdkStatusViewModel by viewModels()
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             BitwardenWearTheme {
-                WearAppRoot(sdkStatusViewModel = sdkStatusViewModel)
+                WearNavHost(startRoute = viewModel.startRoute())
             }
         }
     }
 }
 
-@Composable
-private fun WearAppRoot(sdkStatusViewModel: SdkStatusViewModel) {
-    val sdkStatus by sdkStatusViewModel.sdkStatusFlow.collectAsStateWithLifecycle()
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        item {
-            Text(
-                text = "Bitwarden Wear",
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-            )
-        }
-        item {
-            Text(
-                text = "SDK: $sdkStatus",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-            )
-        }
+/**
+ * Resolves the initial navigation route for the app.
+ */
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val userStateManager: UserStateManager,
+) : ViewModel() {
+
+    /**
+     * Returns the route the app should start on: unlock if an account already
+     * exists, login otherwise.
+     */
+    fun startRoute(): String {
+        val hasActiveAccount = userStateManager.userStateFlow.value?.activeUserId != null
+        return if (hasActiveAccount) WearRoute.Unlock.route else WearRoute.Login.route
     }
 }

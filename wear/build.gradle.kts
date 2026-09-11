@@ -109,6 +109,7 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -125,6 +126,9 @@ dependencies {
     implementation(libs.bitwarden.sdk)
     implementation(libs.google.hilt.android)
     ksp(libs.google.hilt.compiler)
+    // Dagger-generated code imports error-prone annotations; the phone app gets
+    // this transitively but the wear app needs it declared explicitly.
+    implementation("com.google.errorprone:error_prone_annotations:2.47.0")
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.timber)
 
