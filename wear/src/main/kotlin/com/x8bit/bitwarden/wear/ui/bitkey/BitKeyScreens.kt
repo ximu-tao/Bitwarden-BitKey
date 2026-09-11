@@ -1,10 +1,13 @@
 package com.x8bit.bitwarden.wear.ui.bitkey
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -93,7 +96,27 @@ fun ScalingLazyListScope.BitKeyTabContent(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
+        if (errorMessage == BitKeyViewModel.BLUETOOTH_PERMISSION_DENIED_MESSAGE) {
+            item {
+                PermissionSettingsButton()
+            }
+        }
     }
+}
+
+/**
+ * Opens the system settings so the user can grant the missing Bluetooth
+ * permissions (Android 12+ runtime permissions).
+ */
+@Composable
+private fun PermissionSettingsButton() {
+    val context = LocalContext.current
+    ActionButton(
+        text = "打开系统设置",
+        onClick = {
+            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        },
+    )
 }
 
 /**
@@ -259,6 +282,11 @@ fun BitKeyPickerScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
+            }
+            if (errorMessage == BitKeyViewModel.BLUETOOTH_PERMISSION_DENIED_MESSAGE) {
+                item {
+                    PermissionSettingsButton()
+                }
             }
         }
         item {

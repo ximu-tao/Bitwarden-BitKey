@@ -75,7 +75,7 @@ class BitKeyPickerViewModel @Inject constructor(
                 }
             } catch (_: SecurityException) {
                 uiState = uiState.copy(
-                    errorMessage = BLUETOOTH_PERMISSION_DENIED_MESSAGE,
+                    errorMessage = BitKeyViewModel.BLUETOOTH_PERMISSION_DENIED_MESSAGE,
                 )
             } finally {
                 uiState = uiState.copy(isScanning = false)
@@ -126,7 +126,5 @@ class BitKeyPickerViewModel @Inject constructor(
 
     private companion object {
         const val SCAN_TIMEOUT_MILLIS: Long = 20_000
-        const val BLUETOOTH_PERMISSION_DENIED_MESSAGE: String =
-            "没有蓝牙权限，请在系统设置中授予"
     }
 }

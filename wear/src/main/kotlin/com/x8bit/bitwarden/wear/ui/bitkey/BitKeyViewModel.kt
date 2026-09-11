@@ -101,7 +101,7 @@ class BitKeyViewModel @Inject constructor(
         }
     }
 
-    private companion object {
+    companion object {
         const val SCAN_TIMEOUT_MILLIS: Long = 20_000
         const val BLUETOOTH_PERMISSION_DENIED_MESSAGE: String =
             "没有蓝牙权限，请在系统设置中授予"
